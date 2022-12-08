@@ -15,7 +15,7 @@ public class CollectedDeviceDataMapper implements RowMapper<CollectedDeviceData>
         DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         result.setMessageNumber(String.format("%08X", rs.getInt("CMACMessageNumber")));
-        result.setLocationReceived(rs.getString("CMACCapIdentifier"));
+        result.setCapIdentifier(rs.getString("CMACCapIdentifier"));
         result.setUploadId(rs.getInt("UploadID"));
         result.setLocationReceived(rs.getString("LocationReceived"));
         result.setLocationDisplayed(rs.getString("LocationDisplayed"));

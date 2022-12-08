@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -247,7 +246,7 @@ public class WEAController {
      */
     @PutMapping(value = "upload")
     public ResponseEntity<String> upload(@RequestBody CollectedDeviceData userData) {
-        String query = "INSERT INTO alert_db.device_upload_data VALUES('" + userData.getMessageNumber() + "', '" +
+        String query = "INSERT INTO alert_db.device_upload_data VALUES('" + userData.getMessageNumberInt() + "', '" +
                 userData.getCapIdentifier() + "', NULL , NULL, NULL, NULL, '" + userData.getLocationReceived() +
                 "', '" + userData.getLocationDisplayed() + "', '" + userData.getTimeReceived() + "', '" +
                 userData.getTimeDisplayed() + "', " + userData.isReceivedOutsideArea() + ", " +

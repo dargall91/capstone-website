@@ -57,6 +57,10 @@ public class CollectedDeviceData {
         return messageNumber;
     }
 
+    public int getMessageNumberInt() {
+        return Integer.parseInt(messageNumber, 16);
+    }
+
     public String getCapIdentifier() {
         return capIdentifier;
     }
