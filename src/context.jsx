@@ -1,6 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 
+// API KEY: AIzaSyB0Zq3fWV9fXL-_v3A5DGIZXXMnu89A60g
+
 // any static variables go here
 const monthHolder = [
   "January",
