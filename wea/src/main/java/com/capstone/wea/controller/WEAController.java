@@ -1,6 +1,5 @@
 package com.capstone.wea.controller;
 
-import com.capstone.wea.model.cap.CAPMessageModel;
 import com.capstone.wea.model.cap.IPAWSMessageList;
 import com.capstone.wea.model.cmac.*;
 import com.capstone.wea.model.sqlresult.*;
@@ -16,10 +15,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.sql.DataSource;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -28,6 +31,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RequestMapping("/wea/api/")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -35,6 +39,7 @@ import java.util.List;
 public class WEAController {
     @Autowired
     private JdbcTemplate dbTemplate;
+    private SimpleJdbcCall simpleJdbcCall;
     private final int PAGE_SIZE = 9;
     private final String IPAWS_PIN_PARAMETER = "?pin=NnducW4wcTdldjE";
     private final String IPAWS_TEST_URL = "https://tdl.apps.fema.gov/IPAWSOPEN_EAS_SERVICE/rest/";
@@ -233,10 +238,7 @@ public class WEAController {
     /**
      * Endpoint to which the data collected from the
      * mobile device will be sent. The uploaded data
-     * will be added to the database. This endpoint
-     * is simply for testing purposes to make sure an
-     * upload is successful before the database is
-     * created
+     * will be added to the database.
      *
      * @param userData An XML body containing the data
      *                 collected from the user
@@ -246,20 +248,26 @@ public class WEAController {
      */
     @PutMapping(value = "upload")
     public ResponseEntity<String> upload(@RequestBody CollectedDeviceData userData) {
-        String query = "INSERT INTO alert_db.device_upload_data VALUES('" + userData.getMessageNumberInt() + "', '" +
-                userData.getCapIdentifier() + "', NULL , NULL, NULL, NULL, '" + userData.getLocationReceived() +
-                "', '" + userData.getLocationDisplayed() + "', '" + userData.getTimeReceived() + "', '" +
-                userData.getTimeDisplayed() + "', " + userData.isReceivedOutsideArea() + ", " +
-                userData.isDisplayedOutsideArea() + ", " + userData.isReceivedAfterExpired() + ", " +
-                userData.isDisplayedAfterExpired() + ");";
-        dbTemplate.update(query);
+        if (simpleJdbcCall == null) {
+            simpleJdbcCall = new SimpleJdbcCall(dbTemplate.getDataSource());
+        }
 
-        //gets the UploadID of the most recently inserted row
-        query = "SELECT LAST_INSERT_ID();";
-        Integer id = dbTemplate.queryForObject(query, Integer.class);
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("messageNumber", userData.getMessageNumberInt())
+                .addValue("capIdentifier", userData.getCapIdentifier())
+                .addValue("locationReceived", userData.getLocationReceived())
+                .addValue("locationDisplayed", userData.getLocationDisplayed())
+                .addValue("timeReceived", userData.getTimeReceived())
+                .addValue("timeDisplayed", userData.getTimeDisplayed())
+                .addValue("receivedOutside", userData.isReceivedOutsideArea())
+                .addValue("displayedOutside", userData.isDisplayedOutsideArea())
+                .addValue("receivedExpired", userData.isReceivedAfterExpired())
+                .addValue("displayedExpired", userData.isDisplayedAfterExpired());
+
+        Map result = simpleJdbcCall.withProcedureName("UploadUserData").execute(params);
 
         URI location = ServletUriComponentsBuilder
-                .fromHttpUrl("http://localhost:8080/wea/getUpload?identifier=" + id)
+                .fromHttpUrl("http://localhost:8080/wea/api/getUpload?identifier=" + result.get("uploadId"))
                 .buildAndExpand()
                 .toUri();
 

@@ -2,7 +2,7 @@ CREATE DATABASE  IF NOT EXISTS `alert_db` /*!40100 DEFAULT CHARACTER SET utf8mb4
 USE `alert_db`;
 -- MySQL dump 10.13  Distrib 8.0.31, for Linux (x86_64)
 --
--- Host: 127.0.0.1    Database: alert_db
+-- Host: localhost    Database: alert_db
 -- ------------------------------------------------------
 -- Server version	8.0.31-0ubuntu0.22.04.1
 
@@ -197,6 +197,44 @@ LOCK TABLES `device_upload_data` WRITE;
 INSERT INTO `device_upload_data` VALUES (1,'NOAA-NWS-ALERTS Texas 2017-06-01:32:50Z',1,NULL,NULL,NULL,48151,48151,'2017-06-03 01:41:47','2017-06-03 01:42:14',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(1,'NOAA-NWS-ALERTS Texas 2017-06-01:32:50Z',2,NULL,NULL,NULL,48151,48152,'2017-06-03 01:37:50','2017-06-03 01:38:21',_binary '\0',_binary '',_binary '\0',_binary '\0'),(2,'NOAA-NWS-ALERTS Texas 2017-06-01:32:50Z',3,NULL,NULL,NULL,48441,48441,'2017-06-03 01:33:50','2017-06-03 01:36:01',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(2,'NOAA-NWS-ALERTS Texas 2017-06-01:32:50Z',4,NULL,NULL,NULL,48253,48253,'2017-06-03 02:01:12','2017-06-03 02:01:59',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(2,'NOAA-NWS-ALERTS Texas 2017-06-01:32:50Z',5,NULL,NULL,NULL,48254,48253,'2017-06-03 02:00:32','2017-06-03 02:03:59',_binary '',_binary '\0',_binary '\0',_binary '\0'),(3,'NOAA-NWS-ALERTS Texas 2017-06-01:32:50Z',6,NULL,NULL,NULL,48441,48441,'2017-06-03 01:36:24','2017-06-03 01:38:01',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(3,'NOAA-NWS-ALERTS Texas 2017-06-01:32:50Z',7,NULL,NULL,NULL,48059,48441,'2017-06-03 01:34:10','2017-06-03 01:34:12',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(3,'NOAA-NWS-ALERTS Texas 2017-06-01:32:50Z',8,NULL,NULL,NULL,48059,48059,'2017-06-03 02:01:01','2017-06-03 02:01:59',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(3,'NOAA-NWS-ALERTS Texas 2017-06-01:32:50Z',9,NULL,NULL,NULL,48060,48060,'2017-06-03 01:45:16','2017-06-03 01:47:09',_binary '',_binary '',_binary '\0',_binary '\0'),(4,'NOAA-NWS-ALERTS Texas 2017-06-01:32:50Z',10,NULL,NULL,NULL,48151,48441,'2017-06-03 01:33:01','2017-06-03 01:33:14',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(4,'NOAA-NWS-ALERTS Texas 2017-06-01:32:50Z',11,NULL,NULL,NULL,48441,48151,'2017-06-03 01:33:18','2017-06-03 01:33:22',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(4,'NOAA-NWS-ALERTS Texas 2017-06-01:32:50Z',12,NULL,NULL,NULL,48253,48253,'2017-06-03 01:33:29','2017-06-03 01:33:36',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(5,'NOAA-NWS-ALERTS Texas 2022-11-02:04:24Z',13,NULL,NULL,NULL,48151,48151,'2022-11-11 02:41:47','2022-11-11 02:42:01',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(5,'NOAA-NWS-ALERTS Texas 2022-11-02:04:24Z',14,NULL,NULL,NULL,48151,48152,'2022-11-11 02:07:50','2022-11-11 02:08:21',_binary '\0',_binary '',_binary '\0',_binary '\0'),(5,'NOAA-NWS-ALERTS Texas 2022-11-02:04:24Z',15,NULL,NULL,NULL,48254,48253,'2022-11-11 02:05:32','2022-11-11 02:05:59',_binary '',_binary '\0',_binary '\0',_binary '\0'),(5,'NOAA-NWS-ALERTS Texas 2022-11-02:04:24Z',16,NULL,NULL,NULL,48060,48060,'2022-11-11 02:09:16','2022-11-11 02:09:26',_binary '',_binary '',_binary '\0',_binary '\0'),(6,'NOAA-NWS-ALERTS Texas 2022-11-08:29:59Z',17,NULL,NULL,NULL,48441,48441,'2022-11-12 08:31:50','2022-11-12 08:34:03',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(6,'NOAA-NWS-ALERTS Texas 2022-11-08:29:59Z',18,NULL,NULL,NULL,48253,48253,'2022-11-12 08:32:12','2022-11-12 08:01:59',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(6,'NOAA-NWS-ALERTS Texas 2022-11-08:29:59Z',19,NULL,NULL,NULL,48254,48253,'2022-11-12 08:30:32','2022-11-12 08:03:59',_binary '',_binary '\0',_binary '\0',_binary '\0'),(6,'NOAA-NWS-ALERTS Texas 2022-11-08:29:59Z',20,NULL,NULL,NULL,48151,48441,'2022-11-12 08:33:01','2022-11-12 08:33:14',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(7,'NOAA-NWS-ALERTS Texas 2022-11-11:48:01Z',21,NULL,NULL,NULL,48441,48441,'2022-11-13 11:49:24','2022-11-13 11:49:32',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(7,'NOAA-NWS-ALERTS Texas 2022-11-11:48:01Z',22,NULL,NULL,NULL,48059,48441,'2022-11-13 11:51:10','2022-11-13 11:51:12',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(7,'NOAA-NWS-ALERTS Texas 2022-11-11:48:01Z',23,NULL,NULL,NULL,48059,48441,'2022-11-13 11:55:10','2022-11-13 11:55:49',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(7,'NOAA-NWS-ALERTS Texas 2022-11-11:48:01Z',24,NULL,NULL,NULL,48059,48059,'2022-11-13 11:50:01','2022-11-13 11:50:19',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(7,'NOAA-NWS-ALERTS Texas 2022-11-11:48:01Z',25,NULL,NULL,NULL,48060,48060,'2022-11-13 11:48:16','2022-11-13 11:48:47',_binary '',_binary '',_binary '\0',_binary '\0'),(8,'NOAA-NWS-ALERTS Texas 2022-11-17:18:31Z',26,NULL,NULL,NULL,48151,48441,'2022-11-12 17:19:01','2022-11-12 17:19:57',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(8,'NOAA-NWS-ALERTS Texas 2022-11-17:18:31Z',27,NULL,NULL,NULL,48441,48151,'2022-11-12 17:20:18','2022-11-12 17:20:22',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(8,'NOAA-NWS-ALERTS Texas 2022-11-17:18:31Z',28,NULL,NULL,NULL,48253,48253,'2022-11-12 17:18:58','2022-11-12 17:19:06',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(9,'NOAA-NWS-ALERTS Texas 2022-11-17:18:31Z',29,NULL,NULL,NULL,48254,48253,'2022-11-13 17:22:32','2022-11-13 17:23:29',_binary '',_binary '\0',_binary '\0',_binary '\0'),(9,'NOAA-NWS-ALERTS Texas 2022-11-17:18:31Z',30,NULL,NULL,NULL,48059,48059,'2022-11-13 17:24:01','2022-11-13 17:24:14',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(10,'NOAA-NWS-ALERTS Texas 2022-10-17:18:31Z',31,NULL,NULL,NULL,48253,48253,'2022-10-13 17:19:29','2022-10-13 17:19:41',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(10,'NOAA-NWS-ALERTS Texas 2022-10-17:18:31Z',32,NULL,NULL,NULL,48151,48151,'2022-10-13 17:20:47','2022-10-13 17:21:00',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(10,'NOAA-NWS-ALERTS Texas 2022-10-17:18:31Z',33,NULL,NULL,NULL,48254,48253,'2022-10-13 17:19:32','2022-10-13 17:19:51',_binary '',_binary '\0',_binary '\0',_binary '\0'),(10,'NOAA-NWS-ALERTS Texas 2022-10-17:18:31Z',34,NULL,NULL,NULL,48151,48152,'2022-10-13 17:21:50','2022-10-13 17:22:07',_binary '\0',_binary '',_binary '\0',_binary '\0'),(10,'NOAA-NWS-ALERTS Texas 2022-10-17:18:31Z',35,NULL,NULL,NULL,48060,48060,'2022-10-13 17:22:16','2022-10-13 17:22:34',_binary '',_binary '',_binary '\0',_binary '\0'),(11,'NOAA-NWS-ALERTS Texas 2022-10-17:18:31Z',36,NULL,NULL,NULL,48059,48441,'2022-10-13 17:19:10','2022-10-13 17:19:21',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(11,'NOAA-NWS-ALERTS Texas 2022-10-17:18:31Z',37,NULL,NULL,NULL,48151,48151,'2022-10-13 17:18:47','2022-10-13 17:18:56',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(11,'NOAA-NWS-ALERTS Texas 2022-10-17:18:31Z',38,NULL,NULL,NULL,48441,48441,'2022-10-13 17:25:50','2022-10-13 17:25:59',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(12,'NOAA-NWS-ALERTS Texas 2022-11-20:01:39Z',39,NULL,NULL,NULL,48151,48151,'2022-11-13 20:02:02','2022-11-13 20:02:18',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(12,'NOAA-NWS-ALERTS Texas 2022-11-20:01:39Z',40,NULL,NULL,NULL,48253,48253,'2022-11-13 20:03:32','2022-11-13 20:03:47',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(12,'NOAA-NWS-ALERTS Texas 2022-11-20:01:39Z',41,NULL,NULL,NULL,48151,48151,'2022-11-13 20:01:50','2022-11-13 20:02:01',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(12,'NOAA-NWS-ALERTS Texas 2022-11-20:01:39Z',42,NULL,NULL,NULL,48059,48059,'2022-11-13 20:04:16','2022-11-13 20:04:31',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(13,'NOAA-NWS-ALERTS Texas 2022-11-20:53:21Z',43,NULL,NULL,NULL,48059,48441,'2022-11-13 20:53:10','2022-11-13 20:53:28',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(13,'NOAA-NWS-ALERTS Texas 2022-11-20:53:21Z',44,NULL,NULL,NULL,48151,48151,'2022-11-13 20:56:47','2022-11-13 20:57:00',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(13,'NOAA-NWS-ALERTS Texas 2022-11-20:53:21Z',45,NULL,NULL,NULL,48441,48441,'2022-11-13 20:55:50','2022-11-13 20:56:08',_binary '\0',_binary '\0',_binary '\0',_binary '\0'),(13,'NOAA-NWS-ALERTS Texas 2022-11-20:53:21Z',46,NULL,NULL,NULL,48151,48151,'2022-11-13 20:54:23','2022-11-13 20:54:45',_binary '\0',_binary '\0',_binary '\0',_binary '\0');
 /*!40000 ALTER TABLE `device_upload_data` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Dumping routines for database 'alert_db'
+--
+/*!50003 DROP PROCEDURE IF EXISTS `UploadUserData` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `UploadUserData`(
+	messageNumber INT,
+    capIdentifier VARCHAR(180),
+    locationReceived INT,
+    locationDisplayed INT,
+    timeReceived DATETIME,
+    timeDisplayed DATETIME,
+    receivedOutside BIT,
+    displayedOutside BIT,
+    receivedExpired BIT,
+    displayedExpired BIT,
+    OUT uploadId INT
+)
+BEGIN
+	INSERT INTO device_upload_data
+    VALUES(messageNumber, capIdentifier, NULL, NULL, NULL, NULL, locationReceived, locationDisplayed, timeReceived, timeDisplayed,
+    receivedOutside, displayedOutside, receivedExpired, displayedExpired);
+    SET uploadId = LAST_INSERT_ID();
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -207,4 +245,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-11-30 18:21:15
+-- Dump completed on 2023-01-09 20:04:06
