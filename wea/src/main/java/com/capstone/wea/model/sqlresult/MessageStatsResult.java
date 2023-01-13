@@ -1,12 +1,17 @@
 package com.capstone.wea.model.sqlresult;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.sql.Time;
+import java.util.List;
 
 public class MessageStatsResult {
     @JsonProperty("messageNumber")
     private String messageNumber;
+
+    @JsonIgnore
+    private int messageNumberInt;
 
     @JsonProperty("messageType")
     private String messageType;
@@ -40,8 +45,19 @@ public class MessageStatsResult {
     @JsonProperty("displayedAfterExpiredCount")
     private int displayedAfterExpiredCount;
 
-    public MessageStatsResult(String messageNumber) {
-        this.messageNumber = messageNumber;
+    @JsonProperty("coordinates")
+    private List<PolygonCoordinate> polygon;
+
+    @JsonProperty("areas")
+    private List<String> areaNames;
+
+    public MessageStatsResult(int messageNumber) {
+        messageNumberInt = messageNumber;
+        this.messageNumber = String.format("%08X", messageNumber);
+    }
+
+    public int getMessageNumberInt() {
+        return messageNumberInt;
     }
 
     /**
@@ -162,5 +178,23 @@ public class MessageStatsResult {
      */
     public void setDisplayedAfterExpiredCount(int displayedAfterExpiredCount) {
         this.displayedAfterExpiredCount = displayedAfterExpiredCount;
+    }
+
+    /**
+     * Sets the list of polygon coordinates
+     *
+     * @param polygon
+     */
+    public void setPolygon(List<PolygonCoordinate> polygon) {
+        this.polygon = polygon;
+    }
+
+    /**
+     * Sets the list of area names
+     *
+     * @param areaNames
+     */
+    public void setAreaNames(List<String> areaNames) {
+        this.areaNames = areaNames;
     }
 }

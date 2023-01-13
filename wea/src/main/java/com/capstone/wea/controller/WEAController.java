@@ -28,6 +28,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RequestMapping("/wea/api/")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -392,6 +393,27 @@ public class WEAController {
                         "GROUP BY CMACSenderName;";
 
                 commonName = dbTemplate.queryForObject(nameQuery, String.class);
+            }
+
+            //get polygon/area name list for each message in list
+            for (MessageStatsResult result : resultList){
+                String coordinatesQuery = "SELECT Latitude, Longitude " +
+                        "FROM alert_db.cmac_polygon_coordinates " +
+                        "WHERE CMACMessageNumber = " + result.getMessageNumberInt() + ";";
+
+                List<PolygonCoordinate> coordinates = dbTemplate.query(coordinatesQuery, new CMACCoordinateMapper());
+
+                if (coordinates.size() > 0) {
+                    result.setPolygon(coordinates);
+                } else {
+                    String areaNameQuery = "SELECT AreaName " +
+                            "FROM alert_db.cmac_area_description " +
+                            "WHERE CMACMessageNumber = " + result.getMessageNumberInt() + ";";
+
+                    List<String> areaNames = dbTemplate.queryForList(areaNameQuery, String.class);
+
+                    result.setAreaNames(areaNames);
+                }
             }
         } catch (BadSqlGrammarException e) {
             e.printStackTrace();
