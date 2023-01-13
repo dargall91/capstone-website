@@ -117,8 +117,6 @@ public class CMACMessageModel {
                 alertInfo.getCategory() + "', '" + alertInfo.getSeverity() + "', '" + alertInfo.getUrgency() + "', '" +
                 alertInfo.getCertainty() + "', " + referenceNumber + ");";
 
-        System.out.println(query);
-
         //TODO: cap identifier should be the sole primary key so that attempts to insert a duplicate from IPAWS will
         // fail. Also only add messages of type Test, Alert, and Update
         try {

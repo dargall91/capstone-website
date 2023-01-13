@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.sql.DataSource;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -227,7 +226,6 @@ public class WEAController {
             }
         }
 
-        System.out.println("polygon: " + polygon);
         cmacAreaList.get(0).setPolygon(String.valueOf(polygon));
 
         resultMessage.addAlertAreaList(cmacAreaList);
@@ -264,7 +262,7 @@ public class WEAController {
                 .addValue("receivedExpired", userData.isReceivedAfterExpired())
                 .addValue("displayedExpired", userData.isDisplayedAfterExpired());
 
-        Map result = simpleJdbcCall.withProcedureName("UploadUserData").execute(params);
+        Map<String, Object> result = simpleJdbcCall.withProcedureName("UploadUserData").execute(params);
 
         URI location = ServletUriComponentsBuilder
                 .fromHttpUrl("http://localhost:8080/wea/api/getUpload?identifier=" + result.get("uploadId"))
