@@ -142,6 +142,86 @@ CREATE TABLE `device_upload_data` (
 --
 -- Dumping routines for database 'alert_db'
 --
+/*!50003 DROP PROCEDURE IF EXISTS `GetMessageList` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `GetMessageList`(
+	sender VARCHAR(180),
+    pageNum INT,
+    messageNumber INT,
+    messageType VARCHAR(20),
+    fromDate VARCHAR(10),
+    toDate VARCHAR(10),
+    sortBy VARCHAR(200),
+    orderByNum BIT,
+    orderByAsc BIT
+)
+BEGIN
+	DECLARE offsetVal INT DEFAULT 9 * (IF(pageNum < 1, 1, pageNum) - 1);
+    
+	SELECT cmac_message.CMACMessageNumber, CMACDateTime, CMACMessageType, COUNT(*) AS DeviceCount,
+	CAST(SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(TimeReceived, CMACDateTime)))) AS TIME) AS AvgTime,
+	MAX(TIMEDIFF(TimeReceived, CMACDateTime)) AS LongTime,
+	MIN(TIMEDIFF(TimeReceived, CMACDateTime)) AS ShortTime,
+	CAST(SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(TimeDisplayed, TimeReceived)))) AS TIME) AS AvgDelay,
+	SUM(ReceivedOutsideArea) AS ReceivedOutsideCount,
+	SUM(DisplayedOutsideArea) AS DisplayedOutsideCount,
+	SUM(ReceivedAfterExpired) AS ReceivedExpiredCount,
+	SUM(DisplayedAfterExpired) AS DisplayedExpiredCount
+	FROM alert_db.device_upload_data JOIN alert_db.cmac_message
+	ON cmac_message.CMACMessageNumber = device_upload_data.CMACMessageNumber
+    WHERE CMACSender = sender
+    AND cmac_message.CMACMessageNumber = IFNULL(messageNumber, cmac_message.CMACMessageNumber)
+    AND CMACMessageType = IFNULL(messageType, CMACMessageType)
+    AND CMACDateTime >= IFNULL(fromDate, DATE("2016-01-01"))
+    AND CMACDateTime < DATE_ADD(IFNULL(toDate, CURDATE()), INTERVAL 1 DAY)
+    GROUP BY cmac_message.CMACMessageNumber, CMACDateTime, CMACMessageType
+    ORDER BY
+		CASE WHEN orderByNum AND orderByAsc THEN cmac_message.CMACMessageNumber END ASC,
+        CASE WHEN orderByNum AND NOT orderByAsc THEN cmac_message.CMACMessageNumber END DESC,
+        CASE WHEN NOT orderByNum AND orderByAsc THEN CMACDateTime END ASC,
+        CASE WHEN NOT orderByNum AND NOT orderByAsc THEN CMACDateTime END DESC
+    LIMIT 10 OFFSET offsetVal;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `GetOldestMessage` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `GetOldestMessage`(
+	out messageNumber VARCHAR(8),
+    out capIdentifier VARCHAR(180)
+)
+BEGIN
+	SELECT CMACMessageNumber, CMACCapIdentifier
+    INTO messageNumber, capIdentifier
+	FROM alert_db.cmac_message
+	WHERE CMACExpiresDateTime > NOW()
+	ORDER BY CMACDateTime ASC
+	LIMIT 1;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `UploadUserData` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -186,4 +266,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-01-09 20:04:41
+-- Dump completed on 2023-01-14 18:09:06
