@@ -2,9 +2,12 @@ package com.capstone.wea.model.sqlresult;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.util.LinkedCaseInsensitiveMap;
 
+import java.math.BigDecimal;
 import java.sql.Time;
 import java.util.List;
+import java.util.Objects;
 
 public class MessageStatsResult {
     @JsonProperty("messageNumber")
@@ -54,6 +57,26 @@ public class MessageStatsResult {
     public MessageStatsResult(int messageNumber) {
         messageNumberInt = messageNumber;
         this.messageNumber = String.format("%08X", messageNumber);
+    }
+
+    /**
+     * Constructs a new MessageStatsResult object with the items in the map
+     * @param map
+     */
+    public MessageStatsResult(LinkedCaseInsensitiveMap<Object> map) {
+        messageNumberInt = (int) Objects.requireNonNull(map.get("CMACMessageNumber"));
+        messageNumber = Integer.toString(messageNumberInt);
+        date = Objects.requireNonNull(map.get("CMACDateTime")).toString();
+        messageType = Objects.requireNonNull(map.get("CMACMessageType")).toString();
+        deviceCount = Integer.parseInt(Objects.requireNonNull(map.get("DeviceCount")).toString());
+        avgTime = Time.valueOf(Objects.requireNonNull(map.get("AvgTime")).toString());
+        longTime = Time.valueOf(Objects.requireNonNull(map.get("LongTime")).toString());
+        shortTime = Time.valueOf((String) Objects.requireNonNull(map.get("ShortTime")).toString());
+        avgDelay = Time.valueOf(Objects.requireNonNull(map.get("AvgDelay")).toString());
+        receivedOutsideCount = ((BigDecimal) Objects.requireNonNull(map.get("ReceivedOutsideCount"))).intValue();
+        displayedOutsideCount = ((BigDecimal) Objects.requireNonNull(map.get("DisplayedOutsideCount"))).intValue();
+        receivedAfterExpiredCount = ((BigDecimal) Objects.requireNonNull(map.get("ReceivedExpiredCount"))).intValue();
+        displayedAfterExpiredCount =  ((BigDecimal) Objects.requireNonNull(map.get("DisplayedExpiredCount"))).intValue();
     }
 
     public int getMessageNumberInt() {

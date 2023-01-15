@@ -18,6 +18,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
+import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -31,6 +32,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RequestMapping("/wea/api/")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -39,7 +41,6 @@ public class WEAController {
     @Autowired
     private JdbcTemplate dbTemplate;
     private SimpleJdbcCall simpleJdbcCall;
-    private final int PAGE_SIZE = 9;
     private final String IPAWS_PIN_PARAMETER = "?pin=NnducW4wcTdldjE";
     private final String IPAWS_TEST_URL = "https://tdl.apps.fema.gov/IPAWSOPEN_EAS_SERVICE/rest/";
     private final String IPAWS_PROD_URL = "https://apps.fema.gov/IPAWSOPEN_EAS_SERVICE/rest/";
@@ -304,78 +305,47 @@ public class WEAController {
                                                      @RequestParam(required = false) String toDate,
                                                      @RequestParam(required = false) String sortBy,
                                                      @RequestParam(required = false) String sortOrder) {
-        //set base query
-        String baseQuery = "SELECT cmac_message.CMACMessageNumber, CMACDateTime, CMACMessageType, " +
-                "COUNT(*) AS DeviceCount, " +
-                "CAST(SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(TimeReceived, CMACDateTime)))) AS TIME) AS AvgTime, " +
-                "MAX(TIMEDIFF(TimeReceived, CMACDateTime)) AS LongTime, " +
-                "MIN(TIMEDIFF(TimeReceived, CMACDateTime)) AS ShortTime, " +
-                "CAST(SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(TimeDisplayed, TimeReceived)))) AS TIME) AS AvgDelay, " +
-                "SUM(ReceivedOutsideArea) AS ReceivedOutsideCount, " +
-                "SUM(DisplayedOutsideArea) AS DisplayedOutsideCount, " +
-                "SUM(ReceivedAfterExpired) AS ReceivedExpiredCount, " +
-                "SUM(DisplayedAfterExpired) AS DisplayedExpiredCount " +
-                "FROM alert_db.device_upload_data JOIN alert_db.cmac_message " +
-                "ON cmac_message.CMACMessageNumber = device_upload_data.CMACMessageNumber ";
+        //page cannot be zero or negative
+        page = page < 1 ? 1 : page;
 
-        //set filtering for query
-        StringBuilder filters = new StringBuilder("WHERE CMACSender = '" + sender + "' ");
+        //default sort order is date -- used if not provided, or not valid
+        boolean orderByDate = true;
 
-        if (!isNullOrEmpty(messageNumber)) {
-            filters.append("&& cmac_message.CMACMessagenumber = '" + messageNumber + "' ");
+        if (!isNullOrEmpty(sortBy) && sortBy.equalsIgnoreCase("number")) {
+            orderByDate = false;
         }
 
-        if (!isNullOrEmpty(messageType)) {
-            filters.append("&& CMACMessageType LIKE '%" + messageType + "%' ");
+        //default sort order is descending -- used if not provided, or not valid
+        boolean orderByDesc = true;
+
+        if (!isNullOrEmpty(sortOrder) && sortOrder.equalsIgnoreCase("asc")) {
+            orderByDesc = false;
         }
 
-        if (!isNullOrEmpty(fromDate)) {
-            filters.append("&& CMACDateTime >= '" + fromDate + "' ");
-        }
-
-        if (!isNullOrEmpty(toDate)) {
-            filters.append("&& CMACDateTime < DATE_ADD('" + toDate + "', INTERVAL 1 DAY) ");
-        }
-
-        String grouping = "GROUP BY cmac_message.CMACMessageNumber, CMACDateTime, CMACMessageType ";
-
-        //set sorting and ordering
-        if (isNullOrEmpty(sortBy) || (!sortBy.equalsIgnoreCase("number")
-                && !sortBy.equalsIgnoreCase("date")) || sortBy.equalsIgnoreCase("date")) {
-            sortBy = "CMACDateTime";
-        } else {
-            sortBy = "cmac_message.CMACMessagenumber";
-        }
-
-        if (isNullOrEmpty(sortOrder) || (!sortOrder.equalsIgnoreCase("ASC"))
-                && !sortOrder.equalsIgnoreCase("DESC")) {
-            sortOrder = "DESC";
-        } else {
-            sortOrder = sortOrder.toUpperCase();
-        }
-
-        String sorting = "ORDER BY " + sortBy + " " + sortOrder + " ";
-
-        //make sure page is positive
-        if (page < 1) {
-            page = 1;
-        }
-
-        String limit = "LIMIT " + (PAGE_SIZE + 1) + " OFFSET " +
-                (PAGE_SIZE * (page - 1)) + ";";
-
-        StringBuilder query = new StringBuilder(2000)
-                .append(baseQuery)
-                .append(filters)
-                .append(grouping)
-                .append(sorting)
-                .append(limit);
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("sender", sender)
+                .addValue("pageNum", page)
+                .addValue("messageNumber",
+                        isNullOrEmpty(messageNumber) ? null : Integer.parseInt(messageNumber, 16))
+                .addValue("messageType", messageType)
+                .addValue("fromDate", fromDate)
+                .addValue("toDate", toDate)
+                .addValue("orderByDate", orderByDate)
+                .addValue("orderByDesc", orderByDesc);
 
         //override default exception response to avoid showing stacktrace, which may contain table names
-        List<MessageStatsResult> resultList;
+        List<MessageStatsResult> resultList = new ArrayList<>();
         String commonName;
         try {
-            resultList = dbTemplate.query(query.toString(), new StatsResultsMapper());
+            Map<String, Object> queryResult = executeStoredProcedure("GetMessageList", params);
+
+            @SuppressWarnings("unchecked")
+            List<LinkedCaseInsensitiveMap<Object>> queryResultMapList =
+                    (List<LinkedCaseInsensitiveMap<Object>>) queryResult.get("#result-set-1");
+
+            for (LinkedCaseInsensitiveMap<Object> resultMap : queryResultMapList){
+                resultList.add(new MessageStatsResult(resultMap));
+            }
 
             //NWS can have multiple common names but the query expects a singe result
             if (sender.equals("w-nws.webmaster@noaa.gov")) {
@@ -433,7 +403,7 @@ public class WEAController {
      */
     private Map<String, Object> executeStoredProcedure(String procedure) {
         if (simpleJdbcCall == null) {
-            simpleJdbcCall = new SimpleJdbcCall(dbTemplate.getDataSource());
+            simpleJdbcCall = new SimpleJdbcCall(Objects.requireNonNull(dbTemplate.getDataSource()));
         }
 
         return simpleJdbcCall.withProcedureName(procedure).execute();
@@ -448,7 +418,7 @@ public class WEAController {
      */
     private Map<String, Object> executeStoredProcedure(String procedure, SqlParameterSource params) {
         if (simpleJdbcCall == null) {
-            simpleJdbcCall = new SimpleJdbcCall(dbTemplate.getDataSource());
+            simpleJdbcCall = new SimpleJdbcCall(Objects.requireNonNull(dbTemplate.getDataSource()));
         }
 
         return simpleJdbcCall.withProcedureName(procedure).execute(params);

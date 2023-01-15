@@ -218,9 +218,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `GetMessageList`(
     messageType VARCHAR(20),
     fromDate VARCHAR(10),
     toDate VARCHAR(10),
-    sortBy VARCHAR(200),
-    orderByNum BIT,
-    orderByAsc BIT
+    orderByDate BIT,
+    orderByDesc BIT
 )
 BEGIN
 	DECLARE offsetVal INT DEFAULT 9 * (IF(pageNum < 1, 1, pageNum) - 1);
@@ -243,10 +242,10 @@ BEGIN
     AND CMACDateTime < DATE_ADD(IFNULL(toDate, CURDATE()), INTERVAL 1 DAY)
     GROUP BY cmac_message.CMACMessageNumber, CMACDateTime, CMACMessageType
     ORDER BY
-		CASE WHEN orderByNum AND orderByAsc THEN cmac_message.CMACMessageNumber END ASC,
-        CASE WHEN orderByNum AND NOT orderByAsc THEN cmac_message.CMACMessageNumber END DESC,
-        CASE WHEN NOT orderByNum AND orderByAsc THEN CMACDateTime END ASC,
-        CASE WHEN NOT orderByNum AND NOT orderByAsc THEN CMACDateTime END DESC
+		CASE WHEN NOT orderByDate AND NOT orderByDesc THEN cmac_message.CMACMessageNumber END ASC,
+        CASE WHEN NOT orderByDate AND orderByDesc THEN cmac_message.CMACMessageNumber END DESC,
+        CASE WHEN orderByDate AND NOT orderByDesc THEN CMACDateTime END ASC,
+        CASE WHEN orderByDate AND orderByDesc THEN CMACDateTime END DESC
     LIMIT 10 OFFSET offsetVal;
 END ;;
 DELIMITER ;
@@ -325,4 +324,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-01-14 18:07:42
+-- Dump completed on 2023-01-14 20:10:27
