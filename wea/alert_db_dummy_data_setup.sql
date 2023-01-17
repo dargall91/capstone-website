@@ -280,7 +280,43 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 DROP PROCEDURE IF EXISTS `UploadUserData` */;
+/*!50003 DROP PROCEDURE IF EXISTS `InsertCmacMessage` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb3 */ ;
+/*!50003 SET character_set_results = utf8mb3 */ ;
+/*!50003 SET collation_connection  = utf8mb3_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_AUTO_VALUE_ON_ZERO' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InsertCmacMessage`(
+	capIdentifier VARCHAR(180),
+    sender VARCHAR(180),
+    sentDateTime VARCHAR(50),
+    messageStatus VARCHAR(20),
+    messageType VARCHAR(20),
+    senderName VARCHAR(180),
+    expiresTime VARCHAR(50),
+    category VARCHAR(20),
+    severity VARCHAR(20),
+    urgency VARCHAR(20),
+    certainty VARCHAR(20),
+    referenceIdentifier VARCHAR(180),
+    OUT messageNumber INT
+)
+BEGIN
+	INSERT INTO cmac_message
+	VALUES(NULL, capIdentifier, sender, sentDateTime, messageStatus, messageType, senderName, expiresTime, category, severity, urgency,
+    certainty, referenceIdentifier);
+    SET messageNumber = LAST_INSERT_ID();
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `UploadDeviceData` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -290,7 +326,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `UploadUserData`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `UploadDeviceData`(
 	messageNumber INT,
     capIdentifier VARCHAR(180),
     locationReceived INT,
@@ -324,4 +360,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-01-14 20:10:27
+-- Dump completed on 2023-01-16 22:39:57

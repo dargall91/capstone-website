@@ -1,5 +1,6 @@
 package com.capstone.wea.controller;
 
+import com.capstone.wea.Util.SimpleJdbcCallHelper;
 import com.capstone.wea.model.cap.IPAWSMessageList;
 import com.capstone.wea.model.cmac.*;
 import com.capstone.wea.model.sqlresult.*;
@@ -17,7 +18,6 @@ import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -32,15 +32,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @RequestMapping("/wea/api/")
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 public class WEAController {
     @Autowired
-    private JdbcTemplate dbTemplate;
-    private SimpleJdbcCall simpleJdbcCall;
+    private JdbcTemplate jdbcTemplate;
+    private SimpleJdbcCallHelper simpleJdbcCallHelper;
     private final String IPAWS_PIN_PARAMETER = "?pin=NnducW4wcTdldjE";
     private final String IPAWS_TEST_URL = "https://tdl.apps.fema.gov/IPAWSOPEN_EAS_SERVICE/rest/";
     private final String IPAWS_PROD_URL = "https://apps.fema.gov/IPAWSOPEN_EAS_SERVICE/rest/";
@@ -120,7 +119,7 @@ public class WEAController {
         //count the number of new messages added to the database
         int newMessages = 0;
         for (CMACMessageModel message : cmacMessageList) {
-            if (message.addToDatabase(dbTemplate)) {
+            if (message.addToDatabase(jdbcTemplate)) {
                 newMessages++;
             }
         }
@@ -138,34 +137,36 @@ public class WEAController {
      */
     @GetMapping(value = "getMessage", produces = "application/xml")
     public ResponseEntity<CMACMessageModel> getMessage() {
+        if (simpleJdbcCallHelper == null) {
+            simpleJdbcCallHelper = new SimpleJdbcCallHelper(jdbcTemplate);
+        }
+
         //first check for oldest non-expired messages in database
         Map<String, Object> oldestEntry;
+        Boolean newMessages;
 
         try {
-            oldestEntry = executeStoredProcedure("GetOldestMessage");
-        } catch (EmptyResultDataAccessException e) {
-            //no results found
-            Boolean newMessages;
-            try {
-                newMessages = getMessageFromIpaws("prod", ZonedDateTime.now(Clock.systemUTC()).minusMinutes(40), "public");
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                newMessages = false;
-            }
+            oldestEntry = simpleJdbcCallHelper.executeStoredProcedure("GetOldestMessage");
 
-            //if there are no new messages from IPAWS, or if an error was encountered, return 404 not found
-            if (!newMessages) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No new messages found");
-            } else {
-                //otherwise get the oldest message just added to the database
-                try {
-                    oldestEntry = executeStoredProcedure("GetOldestMessage");
-                } catch (EmptyResultDataAccessException exe) {
-                    //precaution on the off chance that an inserted message expires in the short amount of time
-                    // between being added to the database and the query being executed
+            if (oldestEntry.get("messageNumber") == null) {
+                newMessages = getMessageFromIpaws("prod", ZonedDateTime.now(Clock.systemUTC()).minusMinutes(40), "public");
+
+                //if there are no new messages from IPAWS, or if an error was encountered, return 404 not found
+                if (!newMessages) {
                     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No new messages found");
+                } else {
+                    //otherwise get the oldest message just added to the database
+                    try {
+                        oldestEntry = simpleJdbcCallHelper.executeStoredProcedure("GetOldestMessage");
+                    } catch (EmptyResultDataAccessException exe) {
+                        //precaution on the off chance that an inserted message expires in the short amount of time
+                        // between being added to the database and the query being executed
+                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No new messages found");
+                    }
                 }
             }
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
         }
 
         //Get CMAC Message and AlertInfo data
@@ -174,7 +175,7 @@ public class WEAController {
                 "WHERE CMACMessageNumber = " + oldestEntry.get("messageNumber") + " " +
                 "AND CMACCapIdentifier = '" + oldestEntry.get("capIdentifier") + "';";
 
-        CMACMessageModel resultMessage = dbTemplate.queryForObject(query, new CMACMessageMapper());
+        CMACMessageModel resultMessage = jdbcTemplate.queryForObject(query, new CMACMessageMapper());
 
         //TODO: just realized that we never set up the database to support the fact that there can be more than one
         // alert_area. db/model must be updated to give alert areas a unique id, polygon/circle will need updated to
@@ -186,7 +187,7 @@ public class WEAController {
                 "WHERE CMACMessageNumber = " + oldestEntry.get("messageNumber") + " " +
                 "AND CMACCapIdentifier = '" + oldestEntry.get("capIdentifier") + "';";
 
-        List<CMACAlertTextModel> textList = dbTemplate.query(query, new CMACAlertTextMapper());
+        List<CMACAlertTextModel> textList = jdbcTemplate.query(query, new CMACAlertTextMapper());
         resultMessage.addAlertTextList(textList);
 
         //Get CMAC AlertArea data
@@ -195,7 +196,7 @@ public class WEAController {
                 "WHERE CMACMessageNumber = " + oldestEntry.get("messageNumber") + " " +
                 "AND CMACCapIdentifier = '" + oldestEntry.get("capIdentifier") + "';";
 
-        List<List<String>> areaList = dbTemplate.query(query, new CMACAlertAreaMapper());
+        List<List<String>> areaList = jdbcTemplate.query(query, new CMACAlertAreaMapper());
 
         List<CMACAlertAreaModel>  cmacAreaList = new ArrayList<>(areaList.size());
         cmacAreaList.add(new CMACAlertAreaModel());
@@ -210,7 +211,7 @@ public class WEAController {
                 "WHERE CMACMessageNumber = " + oldestEntry.get("messageNumber") + " " +
                 "AND CMACCapIdentifier = '" + oldestEntry.get("capIdentifier") + "';";
 
-        List<String> polyCoordList = dbTemplate.query(query, new PolygonCoordinatesMapper());
+        List<String> polyCoordList = jdbcTemplate.query(query, new PolygonCoordinatesMapper());
 
         StringBuilder polygon = new StringBuilder();
         for (String polyPair : polyCoordList) {
@@ -241,6 +242,10 @@ public class WEAController {
      */
     @PutMapping(value = "upload")
     public ResponseEntity<String> upload(@RequestBody CollectedDeviceData userData) {
+        if (simpleJdbcCallHelper == null) {
+            simpleJdbcCallHelper = new SimpleJdbcCallHelper(jdbcTemplate);
+        }
+
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("messageNumber", userData.getMessageNumberInt())
                 .addValue("capIdentifier", userData.getCapIdentifier())
@@ -253,7 +258,7 @@ public class WEAController {
                 .addValue("receivedExpired", userData.isReceivedAfterExpired())
                 .addValue("displayedExpired", userData.isDisplayedAfterExpired());
 
-        Map<String, Object> result = executeStoredProcedure("UploadUserData", params);
+        Map<String, Object> result = simpleJdbcCallHelper.executeStoredProcedure("UploadDeviceData", params);
 
         URI location = ServletUriComponentsBuilder
                 .fromHttpUrl("http://localhost:8080/wea/api/getUpload?identifier=" + result.get("uploadId"))
@@ -280,7 +285,7 @@ public class WEAController {
                 "FROM alert_db.device_upload_data " +
                 "WHERE device_upload_data.UploadID = '" + identifier + "';";
 
-        CollectedDeviceData data = dbTemplate.queryForObject(query, new CollectedDeviceDataMapper());
+        CollectedDeviceData data = jdbcTemplate.queryForObject(query, new CollectedDeviceDataMapper());
 
         return ResponseEntity.ok(data);
     }
@@ -305,6 +310,10 @@ public class WEAController {
                                                      @RequestParam(required = false) String toDate,
                                                      @RequestParam(required = false) String sortBy,
                                                      @RequestParam(required = false) String sortOrder) {
+        if (simpleJdbcCallHelper == null) {
+            simpleJdbcCallHelper = new SimpleJdbcCallHelper(jdbcTemplate);
+        }
+
         //page cannot be zero or negative
         page = page < 1 ? 1 : page;
 
@@ -337,7 +346,7 @@ public class WEAController {
         List<MessageStatsResult> resultList = new ArrayList<>();
         String commonName;
         try {
-            Map<String, Object> queryResult = executeStoredProcedure("GetMessageList", params);
+            Map<String, Object> queryResult = simpleJdbcCallHelper.executeStoredProcedure("GetMessageList", params);
 
             @SuppressWarnings("unchecked")
             List<LinkedCaseInsensitiveMap<Object>> queryResultMapList =
@@ -357,7 +366,7 @@ public class WEAController {
                         "WHERE CMACSender = '" + sender + "' " +
                         "GROUP BY CMACSenderName;";
 
-                commonName = dbTemplate.queryForObject(nameQuery, String.class);
+                commonName = jdbcTemplate.queryForObject(nameQuery, String.class);
             }
 
             //get polygon/area name list for each message in list
@@ -366,7 +375,7 @@ public class WEAController {
                         "FROM alert_db.cmac_polygon_coordinates " +
                         "WHERE CMACMessageNumber = " + result.getMessageNumberInt() + ";";
 
-                List<PolygonCoordinate> coordinates = dbTemplate.query(coordinatesQuery, new CMACCoordinateMapper());
+                List<PolygonCoordinate> coordinates = jdbcTemplate.query(coordinatesQuery, new CMACCoordinateMapper());
 
                 if (coordinates.size() > 0) {
                     result.setPolygon(coordinates);
@@ -375,7 +384,7 @@ public class WEAController {
                             "FROM alert_db.cmac_area_description " +
                             "WHERE CMACMessageNumber = " + result.getMessageNumberInt() + ";";
 
-                    List<String> areaNames = dbTemplate.queryForList(areaNameQuery, String.class);
+                    List<String> areaNames = jdbcTemplate.queryForList(areaNameQuery, String.class);
 
                     result.setAreaNames(areaNames);
                 }
@@ -393,34 +402,5 @@ public class WEAController {
         root.set("next", BooleanNode.valueOf(resultList.size() > 9));
 
         return ResponseEntity.ok(root);
-    }
-
-    /**
-     * Executes the specified stored procedure
-     *
-     * @param procedure Name of the procedure
-     * @return
-     */
-    private Map<String, Object> executeStoredProcedure(String procedure) {
-        if (simpleJdbcCall == null) {
-            simpleJdbcCall = new SimpleJdbcCall(Objects.requireNonNull(dbTemplate.getDataSource()));
-        }
-
-        return simpleJdbcCall.withProcedureName(procedure).execute();
-    }
-
-    /**
-     * Executes the specified stored procedure
-     *
-     * @param procedure Name of the procedure
-     * @param params The parameters to be used by the stored procedure
-     * @return
-     */
-    private Map<String, Object> executeStoredProcedure(String procedure, SqlParameterSource params) {
-        if (simpleJdbcCall == null) {
-            simpleJdbcCall = new SimpleJdbcCall(Objects.requireNonNull(dbTemplate.getDataSource()));
-        }
-
-        return simpleJdbcCall.withProcedureName(procedure).execute(params);
     }
 }

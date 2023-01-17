@@ -1,14 +1,16 @@
 package com.capstone.wea.model.cmac;
 
-import com.capstone.wea.model.sqlresult.mappers.CMACAlertAreaMapper;
+import com.capstone.wea.Util.SimpleJdbcCallHelper;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.util.List;
+import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JacksonXmlRootElement(localName = "CMAC_Alert_Attributes")
@@ -102,44 +104,47 @@ public class CMACMessageModel {
     /**
      * Adds this CMAC message to the specified database
      *
-     * @param dbTemplate The database to which to add this
+     * @param jdbcTemplate The database to which to add this
      *                   mmessage
      * @return True if the message was added, false if it
      * was not
      */
-    public boolean addToDatabase(JdbcTemplate dbTemplate) {
-        String referenceNumber = alertInfo.getReferenceNumber() == null ?
-                "NULL" : "'" + alertInfo.getReferenceNumber() + "'";
-        String query = "INSERT INTO alert_db.cmac_message " +
-                "VALUES (NULL, '" + capIdentifier + "', '" + sender + "', '" +
-                sentDateTime.replace("Z", "") + "', '" + status + "', '" + messageType + "', '" +
-                alertInfo.getSenderName() + "', '" + alertInfo.getExpires().replace("Z", "") + "', '" +
-                alertInfo.getCategory() + "', '" + alertInfo.getSeverity() + "', '" + alertInfo.getUrgency() + "', '" +
-                alertInfo.getCertainty() + "', " + referenceNumber + ");";
+    public boolean addToDatabase(JdbcTemplate jdbcTemplate) {
+        SimpleJdbcCallHelper simpleJdbcCallHelper = new SimpleJdbcCallHelper(jdbcTemplate);
 
-        //TODO: cap identifier should be the sole primary key so that attempts to insert a duplicate from IPAWS will
-        // fail. Also only add messages of type Test, Alert, and Update
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("capIdentifier", capIdentifier)
+                .addValue("sender", sender)
+                .addValue("sentDateTime", sentDateTime.replace("Z", ""))
+                .addValue("messageStatus", status)
+                .addValue("messageType", messageType)
+                .addValue("senderName", alertInfo.getSenderName())
+                .addValue("expiresTime", alertInfo.getExpires().replace("Z", ""))
+                .addValue("category", alertInfo.getCategory())
+                .addValue("severity", alertInfo.getSeverity())
+                .addValue("urgency", alertInfo.getUrgency())
+                .addValue("certainty", alertInfo.getCertainty())
+                .addValue("referenceIdentifier", alertInfo.getReferenceNumber());
+
         try {
-            int messageNumberInt;
+            Map<String, Object> msgNumResult = simpleJdbcCallHelper.executeStoredProcedure("InsertCmacMessage",
+                    params);
             //failed to insert
-            if (dbTemplate.update(query) == 0) {
+            if (msgNumResult.get("messageNumber") == null) {
                 return false;
-            } else {
-                messageNumberInt = dbTemplate.queryForObject("SELECT LAST_INSERT_ID()", Integer.class);
             }
 
-            messageNumber = String.format("%08X", messageNumberInt);
+            messageNumber = String.format("%08X", (Integer) msgNumResult.get("messageNumber"));
 
             //If another part of this message fails to insert, delete all entries for this message in all tables
-            if (!alertInfo.addToDatabase(dbTemplate, messageNumberInt, capIdentifier)) {
-                removeFromDatabase(dbTemplate);
+            if (!alertInfo.addToDatabase(jdbcTemplate, (Integer) msgNumResult.get(("messageNumber")), capIdentifier)) {
+                removeFromDatabase(jdbcTemplate);
                 return false;
             }
-        } catch (BadSqlGrammarException e) {
-            removeFromDatabase(dbTemplate);
+        } catch (Exception e) {
+            removeFromDatabase(jdbcTemplate);
             return false;
         }
-
 
         return true;
     }
