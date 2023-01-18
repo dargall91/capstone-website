@@ -1,6 +1,5 @@
 package com.capstone.wea.controller;
 
-import com.capstone.wea.Util.SimpleJdbcCallHelper;
 import com.capstone.wea.model.cap.IPAWSMessageList;
 import com.capstone.wea.model.cmac.*;
 import com.capstone.wea.model.sqlresult.*;
@@ -18,6 +17,7 @@ import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -39,7 +39,7 @@ import java.util.Map;
 public class WEAController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    private SimpleJdbcCallHelper simpleJdbcCallHelper;
+    private SimpleJdbcCall simpleJdBcCall;
     private final String IPAWS_PIN_PARAMETER = "?pin=NnducW4wcTdldjE";
     private final String IPAWS_TEST_URL = "https://tdl.apps.fema.gov/IPAWSOPEN_EAS_SERVICE/rest/";
     private final String IPAWS_PROD_URL = "https://apps.fema.gov/IPAWSOPEN_EAS_SERVICE/rest/";
@@ -137,8 +137,8 @@ public class WEAController {
      */
     @GetMapping(value = "getMessage", produces = "application/xml")
     public ResponseEntity<CMACMessageModel> getMessage() {
-        if (simpleJdbcCallHelper == null) {
-            simpleJdbcCallHelper = new SimpleJdbcCallHelper(jdbcTemplate);
+        if (simpleJdBcCall == null) {
+            simpleJdBcCall = new SimpleJdbcCall(jdbcTemplate);
         }
 
         //first check for oldest non-expired messages in database
@@ -146,7 +146,7 @@ public class WEAController {
         Boolean newMessages;
 
         try {
-            oldestEntry = simpleJdbcCallHelper.executeStoredProcedure("GetOldestMessage");
+            oldestEntry = simpleJdBcCall.withProcedureName("GetOldestMessage").execute();
 
             if (oldestEntry.get("messageNumber") == null) {
                 newMessages = getMessageFromIpaws("prod", ZonedDateTime.now(Clock.systemUTC()).minusMinutes(40), "public");
@@ -157,7 +157,7 @@ public class WEAController {
                 } else {
                     //otherwise get the oldest message just added to the database
                     try {
-                        oldestEntry = simpleJdbcCallHelper.executeStoredProcedure("GetOldestMessage");
+                        oldestEntry = simpleJdBcCall.withProcedureName("GetOldestMessage").execute();
                     } catch (EmptyResultDataAccessException exe) {
                         //precaution on the off chance that an inserted message expires in the short amount of time
                         // between being added to the database and the query being executed
@@ -242,8 +242,8 @@ public class WEAController {
      */
     @PutMapping(value = "upload")
     public ResponseEntity<String> upload(@RequestBody CollectedDeviceData userData) {
-        if (simpleJdbcCallHelper == null) {
-            simpleJdbcCallHelper = new SimpleJdbcCallHelper(jdbcTemplate);
+        if (simpleJdBcCall == null) {
+            simpleJdBcCall = new SimpleJdbcCall(jdbcTemplate);
         }
 
         SqlParameterSource params = new MapSqlParameterSource()
@@ -258,7 +258,7 @@ public class WEAController {
                 .addValue("receivedExpired", userData.isReceivedAfterExpired())
                 .addValue("displayedExpired", userData.isDisplayedAfterExpired());
 
-        Map<String, Object> result = simpleJdbcCallHelper.executeStoredProcedure("UploadDeviceData", params);
+        Map<String, Object> result = simpleJdBcCall.withProcedureName("UploadDeviceData").execute(params);
 
         URI location = ServletUriComponentsBuilder
                 .fromHttpUrl("http://localhost:8080/wea/api/getUpload?identifier=" + result.get("uploadId"))
@@ -310,26 +310,18 @@ public class WEAController {
                                                      @RequestParam(required = false) String toDate,
                                                      @RequestParam(required = false) String sortBy,
                                                      @RequestParam(required = false) String sortOrder) {
-        if (simpleJdbcCallHelper == null) {
-            simpleJdbcCallHelper = new SimpleJdbcCallHelper(jdbcTemplate);
+        if (simpleJdBcCall == null) {
+            simpleJdBcCall = new SimpleJdbcCall(jdbcTemplate);
         }
 
         //page cannot be zero or negative
         page = page < 1 ? 1 : page;
 
         //default sort order is date -- used if not provided, or not valid
-        boolean orderByDate = true;
-
-        if (!isNullOrEmpty(sortBy) && sortBy.equalsIgnoreCase("number")) {
-            orderByDate = false;
-        }
+        boolean orderByDate = isNullOrEmpty(sortBy) || !sortBy.equalsIgnoreCase("number");
 
         //default sort order is descending -- used if not provided, or not valid
-        boolean orderByDesc = true;
-
-        if (!isNullOrEmpty(sortOrder) && sortOrder.equalsIgnoreCase("asc")) {
-            orderByDesc = false;
-        }
+        boolean orderByDesc = isNullOrEmpty(sortOrder) || !sortOrder.equalsIgnoreCase("asc");
 
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("sender", sender)
@@ -346,7 +338,7 @@ public class WEAController {
         List<MessageStatsResult> resultList = new ArrayList<>();
         String commonName;
         try {
-            Map<String, Object> queryResult = simpleJdbcCallHelper.executeStoredProcedure("GetMessageList", params);
+            Map<String, Object> queryResult = simpleJdBcCall.withProcedureName("GetMessageList").execute(params);
 
             @SuppressWarnings("unchecked")
             List<LinkedCaseInsensitiveMap<Object>> queryResultMapList =

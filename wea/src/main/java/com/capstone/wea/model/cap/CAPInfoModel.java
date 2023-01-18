@@ -63,6 +63,16 @@ public class CAPInfoModel {
 
         List<CMACAlertTextModel> cmacText = new ArrayList<>();
 
+        //in testing, I encountered a message that did not have a headline OR a description, which caused a null
+        // reference error here
+        if (headline == null) {
+            headline = "null headline";
+        }
+
+        if (description == null) {
+            description = "null description";
+        }
+
         cmacText.add(new CMACAlertTextModel());
         cmacText.get(0).setLanguage("English");
         cmacText.get(0).setShortMessage(headline.replace("\n", " "));

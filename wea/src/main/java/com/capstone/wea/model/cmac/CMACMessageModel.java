@@ -1,6 +1,5 @@
 package com.capstone.wea.model.cmac;
 
-import com.capstone.wea.Util.SimpleJdbcCallHelper;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
@@ -8,6 +7,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 
 import java.util.List;
 import java.util.Map;
@@ -105,12 +105,12 @@ public class CMACMessageModel {
      * Adds this CMAC message to the specified database
      *
      * @param jdbcTemplate The database to which to add this
-     *                   mmessage
+     *                     message
      * @return True if the message was added, false if it
      * was not
      */
     public boolean addToDatabase(JdbcTemplate jdbcTemplate) {
-        SimpleJdbcCallHelper simpleJdbcCallHelper = new SimpleJdbcCallHelper(jdbcTemplate);
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
 
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("capIdentifier", capIdentifier)
@@ -127,8 +127,8 @@ public class CMACMessageModel {
                 .addValue("referenceIdentifier", alertInfo.getReferenceNumber());
 
         try {
-            Map<String, Object> msgNumResult = simpleJdbcCallHelper.executeStoredProcedure("InsertCmacMessage",
-                    params);
+            Map<String, Object> msgNumResult = simpleJdbcCall.withProcedureName("InsertCmacMessage").execute(params);
+
             //failed to insert
             if (msgNumResult.get("messageNumber") == null) {
                 return false;
@@ -153,27 +153,32 @@ public class CMACMessageModel {
         int msgNum = Integer.parseInt(messageNumber, 16);
 
         String query = "DELETE FROM alert_db.cmac_circle_coordinates " +
-                "WHERE CMACMessageNumber = " + msgNum + ";";
+                "WHERE CMACMessageNumber = " + msgNum + " " +
+                "AND CMACCapIdentifier = '" + capIdentifier + "';";
 
         dbTemplate.update(query);
 
         query = "DELETE FROM alert_db.cmac_polygon_coordinates " +
-                "WHERE CMACMessageNumber = " + msgNum + ";";
+                "WHERE CMACMessageNumber = " + msgNum + " " +
+                "AND CMACCapIdentifier = '" + capIdentifier + "';";
 
         dbTemplate.update(query);
 
         query = "DELETE FROM alert_db.cmac_area_description " +
-                "WHERE CMACMessageNumber = " + msgNum + ";";
+                "WHERE CMACMessageNumber = " + msgNum + " " +
+                "AND CMACCapIdentifier = '" + capIdentifier + "';";
 
         dbTemplate.update(query);
 
         query = "DELETE FROM alert_db.cmac_alert_text " +
-                "WHERE CMACMessageNumber = " + msgNum + ";";
+                "WHERE CMACMessageNumber = " + msgNum + " " +
+                "AND CMACCapIdentifier = '" + capIdentifier + "';";
 
         dbTemplate.update(query);
 
         query = "DELETE FROM alert_db.cmac_message " +
-                "WHERE CMACMessageNumber = " + msgNum + ";";
+                "WHERE CMACMessageNumber = " + msgNum + " " +
+                "AND CMACCapIdentifier = '" + capIdentifier + "';";
 
         dbTemplate.update(query);
     }
