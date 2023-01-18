@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcCall;
+
+import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JacksonXmlRootElement(localName = "CMAC_Alert_Text")
@@ -49,21 +53,26 @@ public class CMACAlertTextModel {
         return longMessage;
     }
 
-    public boolean addToDatabase(JdbcTemplate dbTemplate, int messageNumber, String capIdentifier) {
+    public boolean addToDatabase(JdbcTemplate jdbcTemplate, int messageNumber, String capIdentifier) {
         String fullLanguageName;
+
         if (language.equalsIgnoreCase("en-us") || language.equalsIgnoreCase("english")) {
             fullLanguageName = "English";
         } else {
             fullLanguageName = "Spanish";
         }
-        String query = "INSERT INTO alert_db.cmac_alert_text " +
-                "VALUES (" + messageNumber + ", '" + capIdentifier + "', '" + fullLanguageName + "', '" +
-                shortMessage + "', '" + longMessage.replace("'", "\\'") + "');";
 
-        if (dbTemplate.update(query) == 0) {
-            return false;
-        }
+        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
 
-        return true;
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("messageNumber", messageNumber)
+                .addValue("capIdentifier", capIdentifier)
+                .addValue("languageName", fullLanguageName)
+                .addValue("shortMessage", shortMessage)
+                .addValue("longMessage", longMessage);
+
+        Map<String, Object> updateCount = simpleJdbcCall.withProcedureName("InsertAlertText").execute(params);
+        
+        return (Integer) updateCount.get("#update-count-1") != 0;
     }
 }
