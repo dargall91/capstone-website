@@ -101,8 +101,8 @@ public class CMACAlertInfoModel {
     }
 
     public boolean addToDatabase(JdbcTemplate dbTemplate, int messageNumber, String capIdentifier) {
-        for (CMACAlertAreaModel alertArea : alertAreaList) {
-            if (!alertArea.addToDatabase(dbTemplate, messageNumber, capIdentifier)) {
+        for (int i = 0; i < alertAreaList.size(); i++) {
+            if (!alertAreaList.get(i).addToDatabase(dbTemplate, messageNumber, capIdentifier, i)) {
                 return false;
             }
         }

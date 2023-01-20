@@ -90,25 +90,25 @@ public class CMACAlertAreaModel {
         geocodeList.add(geocode);
     }
 
-    public boolean addToDatabase(JdbcTemplate jdbcTemplate, int messageNumber, String capIdentifier) {
+    public boolean addToDatabase(JdbcTemplate jdbcTemplate, int messageNumber, String capIdentifier, int areaId) {
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
 
         MapSqlParameterSource keyParams = new MapSqlParameterSource()
                 .addValue("messageNumber", messageNumber)
                 .addValue("capIdentifier", capIdentifier);
 
-        if (!addAreaNamesToDatabase(simpleJdbcCall, keyParams)) {
+        if (!addAreaNamesToDatabase(simpleJdbcCall, keyParams, areaId)) {
             return false;
         }
 
-        if (!addCoordinatesToDatabase(simpleJdbcCall, keyParams, polygon, "InsertPolygonCoordinates")) {
+        if (!addCoordinatesToDatabase(simpleJdbcCall, keyParams, polygon, "InsertPolygonCoordinates", areaId)) {
             return false;
         }
 
-        return addCoordinatesToDatabase(simpleJdbcCall, keyParams, circle, "InsertCircleCoordinates");
+        return addCoordinatesToDatabase(simpleJdbcCall, keyParams, circle, "InsertCircleCoordinates", areaId);
     }
 
-    private boolean addAreaNamesToDatabase(SimpleJdbcCall simpleJdbcCall, MapSqlParameterSource keyParams) {
+    private boolean addAreaNamesToDatabase(SimpleJdbcCall simpleJdbcCall, MapSqlParameterSource keyParams, int areaId) {
         String[] areaNames = areaDescription.split("; ");
 
         int sameCount = 0;
@@ -138,6 +138,7 @@ public class CMACAlertAreaModel {
             SqlParameterSource params = new MapSqlParameterSource()
                     .addValue("areaName", areaNames[i])
                     .addValue("geocode", geocodeList.get(i + startIndex))
+                    .addValue("areaId", areaId)
                     .addValues(keyParams.getValues());
 
             Map<String, Object> updateCount = simpleJdbcCall.withProcedureName("InsertAreaDescription").execute(params);
@@ -152,7 +153,7 @@ public class CMACAlertAreaModel {
     }
 
     private boolean addCoordinatesToDatabase(SimpleJdbcCall simpleJdbcCall, MapSqlParameterSource keyParams,
-                                             String coordinateString, String procedureName) {
+                                             String coordinateString, String procedureName, int areaId) {
         String[] coordinateList;
 
         if (coordinateString == null || coordinateString.isEmpty()) {
@@ -168,6 +169,7 @@ public class CMACAlertAreaModel {
             SqlParameterSource params = new MapSqlParameterSource()
                     .addValue("latitude", splitCoordinates[0])
                     .addValue("longitude", splitCoordinates[1])
+                    .addValue("areaId", areaId)
                     .addValues(keyParams.getValues());
 
             Map<String, Object> updateCount = simpleJdbcCall.withProcedureName(procedureName).execute(params);
