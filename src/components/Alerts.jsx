@@ -1,7 +1,7 @@
 import { useGlobalContext } from "../context";
 
 const Alerts = () => {
-  const { selectAlert, dbAlertList, page, getCoords } = useGlobalContext();
+  const { selectAlert, dbAlertList, page } = useGlobalContext();
 
   if (dbAlertList.length < 1 && page !== 1) {
     return (

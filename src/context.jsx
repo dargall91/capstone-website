@@ -35,6 +35,7 @@ const AppProvider = ({ children }) => {
   const [fullData, setFullData] = useState([]);
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState("");
+  const [modalImage, setModalImage] = useState("");
 
   // Functions
   const getDate = () => {
@@ -51,12 +52,13 @@ const AppProvider = ({ children }) => {
    *
    * @param {int} idAlert
    */
-  const selectAlert = (idAlert) => {
+  const selectAlert = (idAlert, source) => {
     let alert;
 
     alert = dbAlertList.filter((alert) => alert.messageNumber === idAlert);
     setSelectedAlert(alert);
     setShowModal(true);
+    setModalImage(source);
   };
 
   const closeModal = () => {
@@ -193,6 +195,8 @@ const AppProvider = ({ children }) => {
         fullData,
         buildFilters,
         getCoords,
+        modalImage,
+        setModalImage,
       }}
     >
       {children}
