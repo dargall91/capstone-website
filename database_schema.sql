@@ -47,6 +47,7 @@ CREATE TABLE `cmac_area_description` (
   `CMACCapIdentifier` varchar(150) NOT NULL,
   `AreaName` varchar(500) NOT NULL,
   `CMASGeocode` varchar(20) NOT NULL,
+  `AreaId` int NOT NULL,
   KEY `CMACMessageNumber` (`CMACMessageNumber`,`CMACCapIdentifier`),
   CONSTRAINT `cmac_area_description_ibfk_1` FOREIGN KEY (`CMACMessageNumber`, `CMACCapIdentifier`) REFERENCES `cmac_message` (`CMACMessageNumber`, `CMACCapIdentifier`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -64,6 +65,7 @@ CREATE TABLE `cmac_circle_coordinates` (
   `CMACCapIdentifier` varchar(180) NOT NULL,
   `Latitude` decimal(5,2) NOT NULL,
   `Longitude` decimal(5,2) NOT NULL,
+  `AreaId` int NOT NULL,
   KEY `CMACMessageNumber` (`CMACMessageNumber`,`CMACCapIdentifier`),
   CONSTRAINT `cmac_circle_coordinates_ibfk_1` FOREIGN KEY (`CMACMessageNumber`, `CMACCapIdentifier`) REFERENCES `cmac_message` (`CMACMessageNumber`, `CMACCapIdentifier`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -106,6 +108,7 @@ CREATE TABLE `cmac_polygon_coordinates` (
   `CMACCapIdentifier` varchar(180) NOT NULL,
   `Latitude` decimal(5,2) NOT NULL,
   `Longitude` decimal(5,2) NOT NULL,
+  `AreaId` int NOT NULL,
   KEY `CMACMessageNumber` (`CMACMessageNumber`,`CMACCapIdentifier`),
   CONSTRAINT `cmac_polygon_coordinates_ibfk_1` FOREIGN KEY (`CMACMessageNumber`, `CMACCapIdentifier`) REFERENCES `cmac_message` (`CMACMessageNumber`, `CMACCapIdentifier`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -261,11 +264,12 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `InsertAreaDescription`(
 	messageNumber INT,
     capIdentifier VARCHAR(180),
     areaName VARCHAR(500),
-    geocode VARCHAR(20)
+    geocode VARCHAR(20),
+    areaId INT
 )
 BEGIN
 	INSERT INTO cmac_area_description
-    VALUES(messageNumber, capIdentifier, areaName, geocode);
+    VALUES(messageNumber, capIdentifier, areaName, geocode, areaId);
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -286,11 +290,12 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `InsertCircleCoordinates`(
 	messageNumber INT,
     capIdentifier VARCHAR(180),
     latitude DECIMAL(5,2),
-    longitude DECIMAL(5,2)
+    longitude DECIMAL(5,2),
+    areaId INT
 )
 BEGIN
 	INSERT INTO cmac_circle_coordinates
-    VALUES(messageNumber, capIdentifier, latitude, longitude);
+    VALUES(messageNumber, capIdentifier, latitude, longitude, areaId);
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -347,11 +352,12 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `InsertPolygonCoordinates`(
 	messageNumber INT,
     capIdentifier VARCHAR(180),
     latitude DECIMAL(5,2),
-    longitude DECIMAL(5,2)
+    longitude DECIMAL(5,2),
+    areaId INT
 )
 BEGIN
 	INSERT INTO cmac_polygon_coordinates
-    VALUES(messageNumber, capIdentifier, latitude, longitude);
+    VALUES(messageNumber, capIdentifier, latitude, longitude, areaId);
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -402,4 +408,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-01-18 18:48:05
+-- Dump completed on 2023-01-19 19:47:29
