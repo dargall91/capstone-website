@@ -35,6 +35,7 @@ const AppProvider = ({ children }) => {
   const [fullData, setFullData] = useState([]);
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState("");
+  const [modalImage, setModalImage] = useState("");
 
   // Functions
   const getDate = () => {
@@ -51,12 +52,13 @@ const AppProvider = ({ children }) => {
    *
    * @param {int} idAlert
    */
-  const selectAlert = (idAlert) => {
+  const selectAlert = (idAlert, source) => {
     let alert;
 
     alert = dbAlertList.filter((alert) => alert.messageNumber === idAlert);
     setSelectedAlert(alert);
     setShowModal(true);
+    setModalImage(source);
   };
 
   const closeModal = () => {
@@ -82,24 +84,18 @@ const AppProvider = ({ children }) => {
     }
   };
 
-  const getCoords = (coordList) => {
-    let coordPairs = coordList.split(" ");
+  const getCenter = function (coords) {
+    let array = [];
+    let minX, maxX, minY, maxY;
 
-    let x = [];
-    let y = [];
-
-    coordPairs.array.forEach((element) => {
-      let splitCoords = coordPairs.split(",");
-      x.push(splitCoords[0]);
-      y.push(splitCoords[1]);
+    coords.map((idx) => {
+      minX = Number(idx.lat) < minX || minX == null ? Number(idx.lat) : minX;
+      maxX = Number(idx.lat) > maxX || maxX == null ? Number(idx.lat) : maxX;
+      minY = Number(idx.lon) < minY || minY == null ? Number(idx.lon) : minY;
+      maxY = Number(idx.lon) > maxY || maxY == null ? Number(idx.lon) : maxY;
     });
 
-    let finalCoords = {
-      x: x,
-      y: y,
-    };
-
-    return finalCoords;
+    return [(minX + maxX) / 2, (minY + maxY) / 2];
   };
 
   const buildFilters = ({ mType, mNum, frDate, toDate, sortBy, sortOrder }) => {
@@ -192,7 +188,9 @@ const AppProvider = ({ children }) => {
         decreasePage,
         fullData,
         buildFilters,
-        getCoords,
+        modalImage,
+        setModalImage,
+        getCenter,
       }}
     >
       {children}

@@ -24,7 +24,7 @@ function App() {
           {login && <Header></Header>}
           {login && <Filters></Filters>}
           {login && <NavOptions></NavOptions>}
-          {login && <MapContainer></MapContainer>}
+          {/* {login && <MapContainer></MapContainer>} */}
           {login && <Alerts></Alerts>}
           {showModal && <Modal></Modal>}
         </div>
