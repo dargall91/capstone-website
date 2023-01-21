@@ -1,7 +1,7 @@
 import { useGlobalContext } from "../context";
 
 const Alerts = () => {
-  const { selectAlert, dbAlertList, page } = useGlobalContext();
+  const { selectAlert, dbAlertList, page, getCenter } = useGlobalContext();
 
   if (dbAlertList.length < 1 && page !== 1) {
     return (
@@ -22,9 +22,10 @@ const Alerts = () => {
   return (
     <section className="section-center">
       {dbAlertList.map((alert) => {
-        const { messageNumber, date, messageType } = alert;
-        const source =
-          "https://maps.googleapis.com/maps/api/staticmap?center=Brooklyn+Bridge,New+York,NY&zoom=13&size=300x150&maptype=roadmap&key=AIzaSyB0Zq3fWV9fXL-_v3A5DGIZXXMnu89A60g";
+        const { messageNumber, date, messageType, coordinates } = alert;
+        let center = [];
+        center = getCenter(coordinates);
+        const source = `https://maps.googleapis.com/maps/api/staticmap?center=${center}&zoom=13&size=300x150&maptype=roadmap&key=AIzaSyB0Zq3fWV9fXL-_v3A5DGIZXXMnu89A60g`;
         return (
           <article key={messageNumber} className="single-alert">
             <header>
