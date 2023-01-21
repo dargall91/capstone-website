@@ -410,8 +410,7 @@ ul {
   box-shadow: var(--shadow-4);
 }
 
-.single-alert svg {
-  height: 15rem;
+.single-alert img {
   border-top-left-radius: var(--borderRadius);
   border-top-right-radius: var(--borderRadius);
   cursor: pointer;
@@ -423,7 +422,7 @@ ul {
   font-size: 1.25rem;
 }
 
-.single-alert svg {
+.single-alert img {
   background-color: var(--att);
 }
 
