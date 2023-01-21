@@ -7,12 +7,14 @@ import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class CMACMessageMapper implements RowMapper<CMACMessageModel> {
+public class CMACMessageMapper implements RowMapper<Boolean> {
+    private CMACMessageModel message;
+    public CMACMessageMapper(CMACMessageModel message) {
+        this.message = message;
+    }
+
     @Override
-    public CMACMessageModel mapRow(ResultSet rs, int rowNum) throws SQLException {
-        CMACMessageModel message = new CMACMessageModel();
-
-
+    public Boolean mapRow(ResultSet rs, int rowNum) throws SQLException {
         message.setMessageNumber(String.format("%08X", rs.getInt("CMACMessageNumber")));
         message.setCapIdentifier(rs.getString("CMACCapIdentifier"));
         message.setSender(rs.getString("CMACSender"));
@@ -32,6 +34,6 @@ public class CMACMessageMapper implements RowMapper<CMACMessageModel> {
 
         message.setAlertInfo(alertInfo);
 
-        return message;
+        return true;
     }
 }

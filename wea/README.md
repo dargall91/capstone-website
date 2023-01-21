@@ -14,7 +14,7 @@ intended.
 If you are making changes to the database schema, **DO NOT** directly modify the `alert_db_dummy_data_setup.sql` file. 
 These changes should be made in the `database_schema.sql`. The `alert_db_dummy_data.sql` file is an export created by
 MySQL and any changes made will be overwritten if a new export is produced. It may also fail to execute because it can 
-make the insert statement s invalid.
+make the insert statements invalid.
 
 ## Starting the Server
 

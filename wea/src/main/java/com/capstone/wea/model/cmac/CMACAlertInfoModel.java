@@ -100,11 +100,9 @@ public class CMACAlertInfoModel {
         this.alertTextList = alertTextList;
     }
 
-    public boolean addToDatabase(JdbcTemplate dbTemplate, int messageNumber, String capIdentifier) {
+    public boolean addToDatabase(JdbcTemplate dbTemplate, int messageNumber, String capIdentifier) throws Exception {
         for (int i = 0; i < alertAreaList.size(); i++) {
-            if (!alertAreaList.get(i).addToDatabase(dbTemplate, messageNumber, capIdentifier, i)) {
-                return false;
-            }
+            alertAreaList.get(i).addToDatabase(dbTemplate, messageNumber, capIdentifier, i);
         }
 
         for (CMACAlertTextModel alertText : alertTextList) {

@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,25 +91,22 @@ public class CMACAlertAreaModel {
         geocodeList.add(geocode);
     }
 
-    public boolean addToDatabase(JdbcTemplate jdbcTemplate, int messageNumber, String capIdentifier, int areaId) {
-        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
-
+    public void addToDatabase(JdbcTemplate jdbcTemplate, int messageNumber, String capIdentifier, int areaId)
+            throws Exception {
         MapSqlParameterSource keyParams = new MapSqlParameterSource()
-                .addValue("messageNumber", messageNumber)
-                .addValue("capIdentifier", capIdentifier);
+                .addValue("CMACMessageNumber", messageNumber)
+                .addValue("CMACCapIdentifier", capIdentifier);
 
-        if (!addAreaNamesToDatabase(simpleJdbcCall, keyParams, areaId)) {
-            return false;
-        }
-
-        if (!addCoordinatesToDatabase(simpleJdbcCall, keyParams, polygon, "InsertPolygonCoordinates", areaId)) {
-            return false;
-        }
-
-        return addCoordinatesToDatabase(simpleJdbcCall, keyParams, circle, "InsertCircleCoordinates", areaId);
+        addAreaNamesToDatabase(jdbcTemplate, keyParams, areaId);
+        addCoordinatesToDatabase(jdbcTemplate, keyParams, polygon, "cmac_polygon_coordinates", areaId);
+        addCoordinatesToDatabase(jdbcTemplate, keyParams, circle, "cmac_circle_coordinates", areaId);
     }
 
-    private boolean addAreaNamesToDatabase(SimpleJdbcCall simpleJdbcCall, MapSqlParameterSource keyParams, int areaId) {
+    private void addAreaNamesToDatabase(JdbcTemplate jdbcTemplate, MapSqlParameterSource keyParams, int areaId)
+            throws Exception {
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate.getDataSource())
+                .withTableName("cmac_area_description");
+
         String[] areaNames = areaDescription.split("; ");
 
         int sameCount = 0;
@@ -130,30 +128,31 @@ public class CMACAlertAreaModel {
         } else if (ugcCount == areaNames.length) {
             startIndex = sameCount;
         } else {
-            return false;
+            throw new Exception("Geocode count mismatch");
         }
 
         //TODO: add another column to cmac_area_description: SAME (BIT), update addArea method for this
+        List<SqlParameterSource> paramList = new ArrayList<>();
+
         for (int i = 0; i < areaNames.length; i++) {
             SqlParameterSource params = new MapSqlParameterSource()
-                    .addValue("areaName", areaNames[i])
-                    .addValue("geocode", geocodeList.get(i + startIndex))
-                    .addValue("areaId", areaId)
+                    .addValue("AreaName", areaNames[i])
+                    .addValue("CMASGeocode", geocodeList.get(i + startIndex))
+                    .addValue("AreaId", areaId)
                     .addValues(keyParams.getValues());
 
-            Map<String, Object> updateCount = simpleJdbcCall.withProcedureName("InsertAreaDescription").execute(params);
-
-            //failed to insert, remove all prior successful inserts
-            if ((Integer) updateCount.get("#update-count-1") == 0) {
-                return false;
-            }
+            paramList.add(params);
         }
 
-        return true;
+        //batch throws exception if any insert fails, no need to validate
+        SqlParameterSource[] paramArray = paramList.toArray(new SqlParameterSource[paramList.size()]);
+        simpleJdbcInsert.executeBatch(paramArray);
     }
 
-    private boolean addCoordinatesToDatabase(SimpleJdbcCall simpleJdbcCall, MapSqlParameterSource keyParams,
-                                             String coordinateString, String procedureName, int areaId) {
+    private void addCoordinatesToDatabase(JdbcTemplate jdbcTemplate, MapSqlParameterSource keyParams,
+                                             String coordinateString, String table, int areaId) {
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate.getDataSource())
+                .withTableName(table);
         String[] coordinateList;
 
         if (coordinateString == null || coordinateString.isEmpty()) {
@@ -162,24 +161,23 @@ public class CMACAlertAreaModel {
             coordinateList = coordinateString.split(" ");
         }
 
+        List<SqlParameterSource> paramList = new ArrayList<>();
+
         for (String coordinate : coordinateList) {
             //index 0 = lat, index 1 = lon
             String[] splitCoordinates = coordinate.split(",");
 
             SqlParameterSource params = new MapSqlParameterSource()
-                    .addValue("latitude", splitCoordinates[0])
-                    .addValue("longitude", splitCoordinates[1])
-                    .addValue("areaId", areaId)
+                    .addValue("Latitude", splitCoordinates[0])
+                    .addValue("Longitude", splitCoordinates[1])
+                    .addValue("AreaId", areaId)
                     .addValues(keyParams.getValues());
 
-            Map<String, Object> updateCount = simpleJdbcCall.withProcedureName(procedureName).execute(params);
-
-            //failed to insert, remove all prior successful inserts
-            if ((Integer) updateCount.get("#update-count-1") == 1) {
-                return false;
-            }
+            paramList.add(params);
         }
 
-        return true;
+        //batch throws exception if any insert fails, no need to validate
+        SqlParameterSource[] paramArray = paramList.toArray(new SqlParameterSource[paramList.size()]);
+        simpleJdbcInsert.executeBatch(paramArray);
     }
 }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
 import java.util.Map;
 
@@ -62,17 +63,17 @@ public class CMACAlertTextModel {
             fullLanguageName = "Spanish";
         }
 
-        SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
+        SimpleJdbcInsert simpleJdbcCall = new SimpleJdbcInsert(jdbcTemplate).withTableName("cmac_alert_text");
 
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("messageNumber", messageNumber)
-                .addValue("capIdentifier", capIdentifier)
-                .addValue("languageName", fullLanguageName)
-                .addValue("shortMessage", shortMessage)
-                .addValue("longMessage", longMessage);
+                .addValue("CMACMessageNumber", messageNumber)
+                .addValue("CMACCapIdentifier", capIdentifier)
+                .addValue("CMACLanguage", fullLanguageName)
+                .addValue("CMACShortMessage", shortMessage)
+                .addValue("CMACLongMessage", longMessage);
 
-        Map<String, Object> updateCount = simpleJdbcCall.withProcedureName("InsertAlertText").execute(params);
+        int updateCount = simpleJdbcCall.execute(params);
         
-        return (Integer) updateCount.get("#update-count-1") != 0;
+        return updateCount != 0;
     }
 }
