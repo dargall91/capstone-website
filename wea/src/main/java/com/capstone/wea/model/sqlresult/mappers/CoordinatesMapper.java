@@ -5,7 +5,7 @@ import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class PolygonCoordinatesMapper implements RowMapper<String> {
+public class CoordinatesMapper implements RowMapper<String> {
     @Override
     public String mapRow(ResultSet rs, int rowNum) throws SQLException {
         String coordinates = rs.getString("Latitude") + " " + rs.getString("Longitude");

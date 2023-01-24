@@ -1,6 +1,5 @@
 package com.capstone.wea.controller;
 
-import com.capstone.wea.model.cap.CAPMessageModel;
 import com.capstone.wea.model.cap.IPAWSMessageList;
 import com.capstone.wea.model.cmac.*;
 import com.capstone.wea.model.sqlresult.*;
@@ -11,11 +10,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcCall;
+import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -28,14 +30,15 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RequestMapping("/wea/api/")
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 public class WEAController {
     @Autowired
-    private JdbcTemplate dbTemplate;
-    private final int PAGE_SIZE = 9;
+    private JdbcTemplate jdbcTemplate;
+    private SimpleJdbcCall simpleJdbcCall;
     private final String IPAWS_PIN_PARAMETER = "?pin=NnducW4wcTdldjE";
     private final String IPAWS_TEST_URL = "https://tdl.apps.fema.gov/IPAWSOPEN_EAS_SERVICE/rest/";
     private final String IPAWS_PROD_URL = "https://apps.fema.gov/IPAWSOPEN_EAS_SERVICE/rest/";
@@ -43,15 +46,6 @@ public class WEAController {
     private final String PUBLIC_NON_EAS_FEED = "public_non_eas/recent/";
     private final String PUBLIC_FEED = "public/recent/";
     private final String WEA_FEED = "PublicWEA/recent/";
-
-    //TODO: this class is becoming bloated with long methods and the need for helper methods to reduce duplicate code.
-    // create DatabaseQuery or DatabaseHelper class with methods capable of querying for any type
-    // (ex: public static <T> T queryForSingleObject(String query, Class<T> returnType, Class<R> rowMapper) {...}
-    // can also use some more specific methods such as the messageList query. Util package is probably best place for
-    // it, parser can moved to Util package as well
-
-    //TODO: switch to stored procedures because apparently anything and everything can contain "'" and I'm getting
-    // tired of it
 
     /**
      * Having now worked with C# for a few months, I really miss this method...
@@ -74,9 +68,9 @@ public class WEAController {
      *                 minutes
      * @param feed The feed API to hit; the valid values are: "eas", "non-eas", "public", and "wea";
      *             If an invalid feed is provided, "wea" will be used
-     * @return True if new messages are found, false if they are not
+     * @return The oldest CMACMessage found, or null if none were found
      */
-    private boolean getMessageFromIpaws(String env, ZonedDateTime dateTime, String feed) throws MalformedURLException {
+    private CMACMessageModel getMessageFromIpaws(String env, ZonedDateTime dateTime, String feed) throws MalformedURLException {
         StringBuilder ipawsUrl = new StringBuilder();
         if (env.equalsIgnoreCase("prod")) {
             ipawsUrl.append(IPAWS_PROD_URL);
@@ -112,15 +106,21 @@ public class WEAController {
         IPAWSMessageList ipawsMessageList = XMLParser.parseIpawsUrlResult(getIpaws);
         List<CMACMessageModel> cmacMessageList = ipawsMessageList.toCmac();
 
-        //count the number of new messages added to the database
-        int newMessages = 0;
-        for (CMACMessageModel message : cmacMessageList) {
-            if (message.addToDatabase(dbTemplate)) {
-                newMessages++;
+        //track index of first inserted message, this is the oldest message in the list
+        int oldestMessage = -1;
+        try {
+            for (int i = 0; i < cmacMessageList.size(); i++) {
+                if (cmacMessageList.get(i).addToDatabase(jdbcTemplate)) {
+                    if (oldestMessage == -1) {
+                        oldestMessage = i;
+                    }
+                }
             }
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
         }
 
-        return newMessages > 0;
+        return oldestMessage != -1 ? cmacMessageList.get(oldestMessage) : null;
     }
 
     /**
@@ -133,99 +133,35 @@ public class WEAController {
      */
     @GetMapping(value = "getMessage", produces = "application/xml")
     public ResponseEntity<CMACMessageModel> getMessage() {
-        //first check for oldest non-expired messages in database
-        String query = "SELECT CMACMessageNumber, CMACCapIdentifier " +
-                "FROM alert_db.cmac_message " +
-                "WHERE CMACExpiresDateTime > NOW() " +
-                "ORDER BY CMACDateTime DESC " +
-                "LIMIT 1;";
+        if (simpleJdbcCall == null) {
+            simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
+        }
 
-        List<String> oldestEntry;
+        //first check for oldest non-expired messages in database
+        Map<String, Object> oldestEntry;
+        CMACMessageModel oldestMessage;
 
         try {
-            oldestEntry = dbTemplate.queryForObject(query, new OldestNotExpiredMapper());
-        } catch (EmptyResultDataAccessException e) {
-            //no results found
-            Boolean newMessages;
-            try {
-                newMessages = getMessageFromIpaws("prod", ZonedDateTime.now(Clock.systemUTC()).minusMinutes(40), "public");
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                newMessages = false;
-            }
+            oldestEntry = simpleJdbcCall.withProcedureName("GetOldestMessage").execute();
 
-            //if there are no new messages from IPAWS, or if an error was encountered, return 404 not found
-            if (!newMessages) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No new messages found");
-            } else {
-                //otherwise get the oldest message just added to the database
-                try {
-                    oldestEntry = dbTemplate.queryForObject(query, new OldestNotExpiredMapper());
-                } catch (EmptyResultDataAccessException exe) {
-                    //precaution on the off chance that an inserted message expires in the short amount of time
-                    // between being added to the database and the query being executed
+            //no non-expired mesages in database, check for messages from IPAWS
+            if (oldestEntry.get("messageNumber") == null) {
+                oldestMessage = getMessageFromIpaws("prod", ZonedDateTime.now(Clock.systemUTC()).minusMinutes(40), "public");
+
+                //if there are no new messages from IPAWS, throw error, otherwise return oldest message
+                if (oldestMessage == null) {
                     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No new messages found");
+                } else {
+                    return ResponseEntity.ok(oldestMessage);
                 }
             }
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
         }
 
-        //Get CMAC Message and AlertInfo data
-        query = "SELECT * " +
-                "FROM alert_db.cmac_message " +
-                "WHERE CMACMessageNumber = " + oldestEntry.get(0) + " " +
-                "AND CMACCapIdentifier = '" + oldestEntry.get(1) + "';";
-
-        CMACMessageModel resultMessage = dbTemplate.queryForObject(query, new CMACMessageMapper());
-
-        //TODO: just realized that we never set up the database to support the fact that there can be more than one
-        // alert_area. db/model must be updated to give alert areas a unique id, polygon/circle will need updated to
-        // referenced this id as well
-
-        //Get CMAC AlertText data
-        query = "SELECT CMACLanguage, CMACShortMessage, CMACLongMessage " +
-                "FROM alert_db.cmac_alert_text " +
-                "WHERE CMACMessageNumber = " + oldestEntry.get(0) + " " +
-                "AND CMACCapIdentifier = '" + oldestEntry.get(1) + "';";
-
-        List<CMACAlertTextModel> textList = dbTemplate.query(query, new CMACAlertTextMapper());
-        resultMessage.addAlertTextList(textList);
-
-        //Get CMAC AlertArea data
-        query = "SELECT AreaName, CMASGeocode " +
-                "FROM alert_db.cmac_area_description " +
-                "WHERE CMACMessageNumber = " + oldestEntry.get(0) + " " +
-                "AND CMACCapIdentifier = '" + oldestEntry.get(1) + "';";
-
-        List<List<String>> areaList = dbTemplate.query(query, new CMACAlertAreaMapper());
-
-        List<CMACAlertAreaModel>  cmacAreaList = new ArrayList<>(areaList.size());
-        cmacAreaList.add(new CMACAlertAreaModel());
-
-        for (List<String> area: areaList) {
-            cmacAreaList.get(0).addArea(area.get(0), area.get(1));
-        }
-
-        //polygon coordinates
-        query = "SELECT Latitude, Longitude " +
-                "FROM alert_db.cmac_polygon_coordinates " +
-                "WHERE CMACMessageNumber = " + oldestEntry.get(0) + " " +
-                "AND CMACCapIdentifier = '" + oldestEntry.get(1) + "';";
-
-        List<String> polyCoordList = dbTemplate.query(query, new PolygonCoordinatesMapper());
-
-        StringBuilder polygon = new StringBuilder();
-        for (String polyPair : polyCoordList) {
-            if (!polygon.toString().isBlank()) {
-                polygon.append(",").append(polyPair);
-            } else {
-                polygon.append(polyPair);
-            }
-        }
-
-        System.out.println("polygon: " + polygon);
-        cmacAreaList.get(0).setPolygon(String.valueOf(polygon));
-
-        resultMessage.addAlertAreaList(cmacAreaList);
+        CMACMessageModel resultMessage =
+                new CMACMessageModel(Integer.parseInt(oldestEntry.get("messageNumber").toString()),
+                oldestEntry.get("capIdentifier").toString(), jdbcTemplate);
 
         return ResponseEntity.ok(resultMessage);
     }
@@ -233,10 +169,7 @@ public class WEAController {
     /**
      * Endpoint to which the data collected from the
      * mobile device will be sent. The uploaded data
-     * will be added to the database. This endpoint
-     * is simply for testing purposes to make sure an
-     * upload is successful before the database is
-     * created
+     * will be added to the database.
      *
      * @param userData An XML body containing the data
      *                 collected from the user
@@ -246,20 +179,10 @@ public class WEAController {
      */
     @PutMapping(value = "upload")
     public ResponseEntity<String> upload(@RequestBody CollectedDeviceData userData) {
-        String query = "INSERT INTO alert_db.device_upload_data VALUES('" + userData.getMessageNumberInt() + "', '" +
-                userData.getCapIdentifier() + "', NULL , NULL, NULL, NULL, '" + userData.getLocationReceived() +
-                "', '" + userData.getLocationDisplayed() + "', '" + userData.getTimeReceived() + "', '" +
-                userData.getTimeDisplayed() + "', " + userData.isReceivedOutsideArea() + ", " +
-                userData.isDisplayedOutsideArea() + ", " + userData.isReceivedAfterExpired() + ", " +
-                userData.isDisplayedAfterExpired() + ");";
-        dbTemplate.update(query);
-
-        //gets the UploadID of the most recently inserted row
-        query = "SELECT LAST_INSERT_ID();";
-        Integer id = dbTemplate.queryForObject(query, Integer.class);
+        String uploadId = userData.addToDatabase(jdbcTemplate.getDataSource());
 
         URI location = ServletUriComponentsBuilder
-                .fromHttpUrl("http://localhost:8080/wea/getUpload?identifier=" + id)
+                .fromHttpUrl("http://localhost:8080/wea/api/getUpload?identifier=" + uploadId)
                 .buildAndExpand()
                 .toUri();
 
@@ -283,7 +206,7 @@ public class WEAController {
                 "FROM alert_db.device_upload_data " +
                 "WHERE device_upload_data.UploadID = '" + identifier + "';";
 
-        CollectedDeviceData data = dbTemplate.queryForObject(query, new CollectedDeviceDataMapper());
+        CollectedDeviceData data = jdbcTemplate.queryForObject(query, new CollectedDeviceDataMapper());
 
         return ResponseEntity.ok(data);
     }
@@ -308,78 +231,43 @@ public class WEAController {
                                                      @RequestParam(required = false) String toDate,
                                                      @RequestParam(required = false) String sortBy,
                                                      @RequestParam(required = false) String sortOrder) {
-        //set base query
-        String baseQuery = "SELECT cmac_message.CMACMessageNumber, CMACDateTime, CMACMessageType, " +
-                "COUNT(*) AS DeviceCount, " +
-                "CAST(SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(TimeReceived, CMACDateTime)))) AS TIME) AS AvgTime, " +
-                "MAX(TIMEDIFF(TimeReceived, CMACDateTime)) AS LongTime, " +
-                "MIN(TIMEDIFF(TimeReceived, CMACDateTime)) AS ShortTime, " +
-                "CAST(SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(TimeDisplayed, TimeReceived)))) AS TIME) AS AvgDelay, " +
-                "SUM(ReceivedOutsideArea) AS ReceivedOutsideCount, " +
-                "SUM(DisplayedOutsideArea) AS DisplayedOutsideCount, " +
-                "SUM(ReceivedAfterExpired) AS ReceivedExpiredCount, " +
-                "SUM(DisplayedAfterExpired) AS DisplayedExpiredCount " +
-                "FROM alert_db.device_upload_data JOIN alert_db.cmac_message " +
-                "ON cmac_message.CMACMessageNumber = device_upload_data.CMACMessageNumber ";
-
-        //set filtering for query
-        StringBuilder filters = new StringBuilder("WHERE CMACSender = '" + sender + "' ");
-
-        if (!isNullOrEmpty(messageNumber)) {
-            filters.append("&& cmac_message.CMACMessagenumber = '" + messageNumber + "' ");
+        if (simpleJdbcCall == null) {
+            simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
         }
 
-        if (!isNullOrEmpty(messageType)) {
-            filters.append("&& CMACMessageType LIKE '%" + messageType + "%' ");
-        }
+        //page cannot be zero or negative
+        page = page < 1 ? 1 : page;
 
-        if (!isNullOrEmpty(fromDate)) {
-            filters.append("&& CMACDateTime >= '" + fromDate + "' ");
-        }
+        //default sort order is date -- used if not provided, or not valid
+        boolean orderByDate = isNullOrEmpty(sortBy) || !sortBy.equalsIgnoreCase("number");
 
-        if (!isNullOrEmpty(toDate)) {
-            filters.append("&& CMACDateTime < DATE_ADD('" + toDate + "', INTERVAL 1 DAY) ");
-        }
+        //default sort order is descending -- used if not provided, or not valid
+        boolean orderByDesc = isNullOrEmpty(sortOrder) || !sortOrder.equalsIgnoreCase("asc");
 
-        String grouping = "GROUP BY cmac_message.CMACMessageNumber, CMACDateTime, CMACMessageType ";
-
-        //set sorting and ordering
-        if (isNullOrEmpty(sortBy) || (!sortBy.equalsIgnoreCase("number")
-                && !sortBy.equalsIgnoreCase("date")) || sortBy.equalsIgnoreCase("date")) {
-            sortBy = "CMACDateTime";
-        } else {
-            sortBy = "cmac_message.CMACMessagenumber";
-        }
-
-        if (isNullOrEmpty(sortOrder) || (!sortOrder.equalsIgnoreCase("ASC"))
-                && !sortOrder.equalsIgnoreCase("DESC")) {
-            sortOrder = "DESC";
-        } else {
-            sortOrder = sortOrder.toUpperCase();
-        }
-
-        String sorting = "ORDER BY " + sortBy + " " + sortOrder + " ";
-
-        //make sure page is positive
-        if (page < 1) {
-            page = 1;
-        }
-
-        String limit = "LIMIT " + (PAGE_SIZE + 1) + " OFFSET " +
-                (PAGE_SIZE * (page - 1)) + ";";
-
-        StringBuilder query = new StringBuilder(2000)
-                .append(baseQuery)
-                .append(filters)
-                .append(grouping)
-                .append(sorting)
-                .append(limit);
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("sender", sender)
+                .addValue("pageNum", page)
+                .addValue("messageNumber",
+                        isNullOrEmpty(messageNumber) ? null : Integer.parseInt(messageNumber, 16))
+                .addValue("messageType", messageType)
+                .addValue("fromDate", fromDate)
+                .addValue("toDate", toDate)
+                .addValue("orderByDate", orderByDate)
+                .addValue("orderByDesc", orderByDesc);
 
         //override default exception response to avoid showing stacktrace, which may contain table names
-        List<MessageStatsResult> resultList;
+        List<MessageStatsResult> resultList = new ArrayList<>();
         String commonName;
         try {
-            resultList = dbTemplate.query(query.toString(), new StatsResultsMapper());
+            Map<String, Object> queryResult = simpleJdbcCall.withProcedureName("GetMessageList").execute(params);
+
+            @SuppressWarnings("unchecked")
+            List<LinkedCaseInsensitiveMap<Object>> queryResultMapList =
+                    (List<LinkedCaseInsensitiveMap<Object>>) queryResult.get("#result-set-1");
+
+            for (LinkedCaseInsensitiveMap<Object> resultMap : queryResultMapList){
+                resultList.add(new MessageStatsResult(resultMap));
+            }
 
             //NWS can have multiple common names but the query expects a singe result
             if (sender.equals("w-nws.webmaster@noaa.gov")) {
@@ -391,7 +279,28 @@ public class WEAController {
                         "WHERE CMACSender = '" + sender + "' " +
                         "GROUP BY CMACSenderName;";
 
-                commonName = dbTemplate.queryForObject(nameQuery, String.class);
+                commonName = jdbcTemplate.queryForObject(nameQuery, String.class);
+            }
+
+            //get polygon/area name list for each message in list
+            for (MessageStatsResult result : resultList){
+                String coordinatesQuery = "SELECT Latitude, Longitude " +
+                        "FROM alert_db.cmac_polygon_coordinates " +
+                        "WHERE CMACMessageNumber = " + result.getMessageNumberInt() + ";";
+
+                List<PolygonCoordinate> coordinates = jdbcTemplate.query(coordinatesQuery, new CMACCoordinateMapper());
+
+                if (coordinates.size() > 0) {
+                    result.setPolygon(coordinates);
+                } else {
+                    String areaNameQuery = "SELECT AreaName " +
+                            "FROM alert_db.cmac_area_description " +
+                            "WHERE CMACMessageNumber = " + result.getMessageNumberInt() + ";";
+
+                    List<String> areaNames = jdbcTemplate.queryForList(areaNameQuery, String.class);
+
+                    result.setAreaNames(areaNames);
+                }
             }
         } catch (BadSqlGrammarException e) {
             e.printStackTrace();

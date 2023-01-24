@@ -2,7 +2,14 @@ package com.capstone.wea.model.cmac;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcCall;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+
+import javax.sql.DataSource;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @JacksonXmlRootElement(localName = "CMAC_device_data")
 public class CollectedDeviceData {
@@ -160,5 +167,27 @@ public class CollectedDeviceData {
 
     public void setDisplayedAfterExpired(boolean displayedAfterExpired) {
         this.displayedAfterExpired = displayedAfterExpired;
+    }
+
+    public String addToDatabase(DataSource dataSource) {
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(dataSource)
+                .withTableName("device_upload_data")
+                .usingGeneratedKeyColumns("UploadId");
+
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("CMACMessageNumber", getMessageNumberInt())
+                .addValue("CMACCapIdentifier", capIdentifier)
+                .addValue("LocationReceived", locationReceived)
+                .addValue("LocationDisplayed", locationDisplayed)
+                .addValue("TimeReceived", timeReceived)
+                .addValue("TimeDisplayed", timeDisplayed)
+                .addValue("ReceivedOutside", receivedOutsideArea)
+                .addValue("DisplayedOutside", displayedOutsideArea)
+                .addValue("ReceivedExpired", receivedAfterExpired)
+                .addValue("DisplayedExpired", displayedAfterExpired);
+
+        Number uploadId = simpleJdbcInsert.executeAndReturnKey(params);
+
+        return uploadId.toString();
     }
 }

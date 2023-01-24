@@ -7,6 +7,7 @@ import Modal from "./components/Modal";
 import Login from "./components/Login";
 import NavOptions from "./components/NavOptions";
 import Filters from "./components/Filters";
+import MapContainer from "./components/MapContainer";
 
 // I placed test text and context placeholder text for
 // everyone to hopefully understand how the context works.
@@ -23,6 +24,7 @@ function App() {
           {login && <Header></Header>}
           {login && <Filters></Filters>}
           {login && <NavOptions></NavOptions>}
+          {/* {login && <MapContainer></MapContainer>} */}
           {login && <Alerts></Alerts>}
           {showModal && <Modal></Modal>}
         </div>
