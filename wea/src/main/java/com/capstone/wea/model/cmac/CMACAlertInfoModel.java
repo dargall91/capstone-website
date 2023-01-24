@@ -6,7 +6,6 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -101,11 +100,9 @@ public class CMACAlertInfoModel {
         this.alertTextList = alertTextList;
     }
 
-    public boolean addToDatabase(JdbcTemplate dbTemplate, int messageNumber, String capIdentifier) {
-        for (CMACAlertAreaModel alertArea : alertAreaList) {
-            if (!alertArea.addToDatabase(dbTemplate, messageNumber, capIdentifier)) {
-                return false;
-            }
+    public boolean addToDatabase(JdbcTemplate dbTemplate, int messageNumber, String capIdentifier) throws Exception {
+        for (int i = 0; i < alertAreaList.size(); i++) {
+            alertAreaList.get(i).addToDatabase(dbTemplate, messageNumber, capIdentifier, i);
         }
 
         for (CMACAlertTextModel alertText : alertTextList) {
