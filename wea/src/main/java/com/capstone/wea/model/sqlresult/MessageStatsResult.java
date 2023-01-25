@@ -49,15 +49,10 @@ public class MessageStatsResult {
     private int displayedAfterExpiredCount;
 
     @JsonProperty("coordinates")
-    private List<PolygonCoordinate> polygon;
+    private List<Coordinate> polygon;
 
-    @JsonProperty("areas")
-    private List<String> areaNames;
-
-    public MessageStatsResult(int messageNumber) {
-        messageNumberInt = messageNumber;
-        this.messageNumber = String.format("%08X", messageNumber);
-    }
+    @JsonProperty("geocodes")
+    private List<String> geocodeList;
 
     /**
      * Constructs a new MessageStatsResult object with the items in the map
@@ -208,7 +203,7 @@ public class MessageStatsResult {
      *
      * @param polygon
      */
-    public void setPolygon(List<PolygonCoordinate> polygon) {
+    public void setPolygon(List<Coordinate> polygon) {
         this.polygon = polygon;
     }
 
