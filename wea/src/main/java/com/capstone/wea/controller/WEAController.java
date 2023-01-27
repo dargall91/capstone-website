@@ -56,7 +56,7 @@ public class WEAController {
         try {
             oldestEntry = simpleJdbcCall.withProcedureName("GetOldestMessage").execute();
 
-            //no non-expired mesages in database, check for messages from IPAWS
+            //no non-expired messages in database, check for messages from IPAWS
             if (oldestEntry.get("messageNumber") == null) {
                 oldestMessage = IPAWSInterface.getMessageFromIpaws("prod", jdbcTemplate, "public");
 
@@ -151,16 +151,16 @@ public class WEAController {
         page = page < 1 ? 1 : page;
 
         //default sort order is date -- used if not provided, or not valid
-        boolean orderByDate = isNullOrEmpty(sortBy) || !sortBy.equalsIgnoreCase("number");
+        boolean orderByDate = Util.isNullOrBlank(sortBy) || !sortBy.equalsIgnoreCase("number");
 
         //default sort order is descending -- used if not provided, or not valid
-        boolean orderByDesc = isNullOrEmpty(sortOrder) || !sortOrder.equalsIgnoreCase("asc");
+        boolean orderByDesc = Util.isNullOrBlank(sortOrder) || !sortOrder.equalsIgnoreCase("asc");
 
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("sender", sender)
                 .addValue("pageNum", page)
                 .addValue("messageNumber",
-                        isNullOrEmpty(messageNumber) ? null : Integer.parseInt(messageNumber, 16))
+                        Util.isNullOrBlank(messageNumber) ? null : Integer.parseInt(messageNumber, 16))
                 .addValue("messageType", messageType)
                 .addValue("fromDate", fromDate)
                 .addValue("toDate", toDate)
@@ -200,18 +200,28 @@ public class WEAController {
                         "FROM alert_db.cmac_polygon_coordinates " +
                         "WHERE CMACMessageNumber = " + result.getMessageNumberInt() + ";";
 
-                List<PolygonCoordinate> coordinates = jdbcTemplate.query(coordinatesQuery, new CMACCoordinateMapper());
+                List<Coordinate> coordinates = jdbcTemplate.query(coordinatesQuery, new CMACCoordinateMapper());
 
+                //if no polygon coordinates, look for circle coordinates
+                if (coordinates.size() == 0) {
+                    coordinatesQuery = "SELECT Latitude, Longitude " +
+                            "FROM alert_db.cmac_circle_coordinates " +
+                            "WHERE CMACMessageNumber = " + result.getMessageNumberInt() + ";";
+
+                    coordinates = jdbcTemplate.query(coordinatesQuery, new CMACCoordinateMapper());
+                }
+
+                //if no coordinates, use geocodes
                 if (coordinates.size() > 0) {
                     result.setPolygon(coordinates);
                 } else {
-                    String areaNameQuery = "SELECT AreaName " +
+                    String areaNameQuery = "SELECT CMASGeocode " +
                             "FROM alert_db.cmac_area_description " +
                             "WHERE CMACMessageNumber = " + result.getMessageNumberInt() + ";";
 
-                    List<String> areaNames = jdbcTemplate.queryForList(areaNameQuery, String.class);
+                    List<String> geocodes = jdbcTemplate.queryForList(areaNameQuery, String.class);
 
-                    result.setAreaNames(areaNames);
+                    result.setGeocodeList(geocodes);
                 }
             }
         } catch (BadSqlGrammarException e) {

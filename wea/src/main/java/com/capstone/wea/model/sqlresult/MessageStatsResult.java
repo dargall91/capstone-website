@@ -60,7 +60,7 @@ public class MessageStatsResult {
      */
     public MessageStatsResult(LinkedCaseInsensitiveMap<Object> map) {
         messageNumberInt = (int) Objects.requireNonNull(map.get("CMACMessageNumber"));
-        messageNumber = Integer.toString(messageNumberInt);
+        messageNumber = String.format("%08X", messageNumberInt);
         date = Objects.requireNonNull(map.get("CMACDateTime")).toString();
         messageType = Objects.requireNonNull(map.get("CMACMessageType")).toString();
         deviceCount = Integer.parseInt(Objects.requireNonNull(map.get("DeviceCount")).toString());
@@ -210,9 +210,9 @@ public class MessageStatsResult {
     /**
      * Sets the list of area names
      *
-     * @param areaNames
+     * @param geocodeList
      */
-    public void setAreaNames(List<String> areaNames) {
-        this.areaNames = areaNames;
+    public void setGeocodeList(List<String> geocodeList) {
+        this.geocodeList = geocodeList;
     }
 }
