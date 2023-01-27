@@ -14,7 +14,7 @@ const Alerts = () => {
   if (dbAlertList.length < 1) {
     return (
       <section>
-        {/* <img src="https://maps.googleapis.com/maps/api/staticmap?center=32.21,-99.62&markers=size:tiny|32.21,-99.62&zoom=13&size=300x150&maptype=roadmap&key=AIzaSyB0Zq3fWV9fXL-_v3A5DGIZXXMnu89A60g"></img> */}
+        {/* <img src="https://maps.googleapis.com/maps/api/staticmap?center=32.21,-99.62&markers=size:tiny|32.21,-99.62|32.27,-100.15|32.52,-100.15|32.52,-100.16|32.72,-100.17|32.85,-99.61|32.21,-99.62&size=300x150&maptype=roadmap&key=AIzaSyB0Zq3fWV9fXL-_v3A5DGIZXXMnu89A60g"></img> */}
         <h4>No alerts have been retrieved.</h4>
       </section>
     );
@@ -26,7 +26,7 @@ const Alerts = () => {
         const { messageNumber, date, messageType, coordinates } = alert;
         let center = [];
         center = getCenter(coordinates);
-        const source = `https://maps.googleapis.com/maps/api/staticmap?center=32.21,-99.62&markers=size:tiny|32.21,-99.62&zoom=13&size=300x150&maptype=roadmap&key=AIzaSyB0Zq3fWV9fXL-_v3A5DGIZXXMnu89A60g`;
+        const source = `https://maps.googleapis.com/maps/api/staticmap?center=${center[0]},${center[1]}&markers=size:tiny|32.21,-99.62|32.27,-100.15|32.52,-100.15|32.52,-100.16|32.72,-100.17|32.85,-99.61|32.21,-99.62&size=300x150&maptype=roadmap&key=AIzaSyB0Zq3fWV9fXL-_v3A5DGIZXXMnu89A60g`;
         // const source = "";
         return (
           <article key={messageNumber} className="single-alert">
