@@ -1,10 +1,10 @@
 package com.capstone.wea.controller;
 
-import com.capstone.wea.model.cap.IPAWSMessageList;
+import com.capstone.wea.Util.IPAWSInterface;
+import com.capstone.wea.Util.Util;
 import com.capstone.wea.model.cmac.*;
 import com.capstone.wea.model.sqlresult.*;
 import com.capstone.wea.model.sqlresult.mappers.*;
-import com.capstone.wea.parser.XMLParser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.BooleanNode;
@@ -22,12 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
-import java.time.Clock;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,89 +34,6 @@ public class WEAController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
     private SimpleJdbcCall simpleJdbcCall;
-    private final String IPAWS_PIN_PARAMETER = "?pin=NnducW4wcTdldjE";
-    private final String IPAWS_TEST_URL = "https://tdl.apps.fema.gov/IPAWSOPEN_EAS_SERVICE/rest/";
-    private final String IPAWS_PROD_URL = "https://apps.fema.gov/IPAWSOPEN_EAS_SERVICE/rest/";
-    private final String EAS_FEED = "eas/recent/";
-    private final String PUBLIC_NON_EAS_FEED = "public_non_eas/recent/";
-    private final String PUBLIC_FEED = "public/recent/";
-    private final String WEA_FEED = "PublicWEA/recent/";
-
-    /**
-     * Having now worked with C# for a few months, I really miss this method...
-     *
-     * @return True if the string is null or empty, false if it is not
-     */
-    private boolean isNullOrEmpty(String value) {
-        return (value == null || value.isEmpty());
-    }
-
-    /**
-     * Hits the IPAWS API to see if there are any new messages. If new messages are found
-     * they are added to the database.
-     *
-     * @param env The IPAWS environment API to hit; valid values are "test" and "prod";
-     *            If an invalid value is passed, the test environment will be used
-     * @param dateTime String representation of how far back to query; If this time is within 5
-     *                 minutes of the current time results wil include all messages sent within
-     *                 the last 5 minutes; The maximum amount of time you can go back is 30
-     *                 minutes
-     * @param feed The feed API to hit; the valid values are: "eas", "non-eas", "public", and "wea";
-     *             If an invalid feed is provided, "wea" will be used
-     * @return The oldest CMACMessage found, or null if none were found
-     */
-    private CMACMessageModel getMessageFromIpaws(String env, ZonedDateTime dateTime, String feed) throws MalformedURLException {
-        StringBuilder ipawsUrl = new StringBuilder();
-        if (env.equalsIgnoreCase("prod")) {
-            ipawsUrl.append(IPAWS_PROD_URL);
-        } else {
-            ipawsUrl.append(IPAWS_TEST_URL);
-        }
-
-        if (feed.equalsIgnoreCase("eas")) {
-            ipawsUrl.append(EAS_FEED);
-        } else if (feed.equalsIgnoreCase("non-eas")) {
-            ipawsUrl.append(PUBLIC_NON_EAS_FEED);
-        } else if (feed.equalsIgnoreCase("public")) {
-            ipawsUrl.append(PUBLIC_FEED);
-        } else {
-            ipawsUrl.append(WEA_FEED);
-        }
-
-        if (dateTime == null) {
-            dateTime = ZonedDateTime.now(Clock.systemUTC()).withNano( 0);
-        } else if (ZonedDateTime.now(Clock.systemUTC()).withNano(0).minusMinutes(30)
-                .isAfter(dateTime.withNano(0))) {
-            dateTime = ZonedDateTime.now(Clock.systemUTC()).withNano( 0).minusMinutes(30);
-        } else {
-            //drop nanoseconds
-            dateTime = dateTime.withNano(0);
-        }
-
-        ipawsUrl.append(dateTime.format(DateTimeFormatter.ISO_INSTANT).toString())
-                .append(IPAWS_PIN_PARAMETER);
-
-        URL getIpaws = new URL(ipawsUrl.toString());
-
-        IPAWSMessageList ipawsMessageList = XMLParser.parseIpawsUrlResult(getIpaws);
-        List<CMACMessageModel> cmacMessageList = ipawsMessageList.toCmac();
-
-        //track index of first inserted message, this is the oldest message in the list
-        int oldestMessage = -1;
-        try {
-            for (int i = 0; i < cmacMessageList.size(); i++) {
-                if (cmacMessageList.get(i).addToDatabase(jdbcTemplate)) {
-                    if (oldestMessage == -1) {
-                        oldestMessage = i;
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-        }
-
-        return oldestMessage != -1 ? cmacMessageList.get(oldestMessage) : null;
-    }
 
     /**
      * Endpoint to request a WEA message from the server.
@@ -144,9 +56,9 @@ public class WEAController {
         try {
             oldestEntry = simpleJdbcCall.withProcedureName("GetOldestMessage").execute();
 
-            //no non-expired mesages in database, check for messages from IPAWS
+            //no non-expired messages in database, check for messages from IPAWS
             if (oldestEntry.get("messageNumber") == null) {
-                oldestMessage = getMessageFromIpaws("prod", ZonedDateTime.now(Clock.systemUTC()).minusMinutes(40), "public");
+                oldestMessage = IPAWSInterface.getMessageFromIpaws("prod", jdbcTemplate, "public");
 
                 //if there are no new messages from IPAWS, throw error, otherwise return oldest message
                 if (oldestMessage == null) {
@@ -239,16 +151,16 @@ public class WEAController {
         page = page < 1 ? 1 : page;
 
         //default sort order is date -- used if not provided, or not valid
-        boolean orderByDate = isNullOrEmpty(sortBy) || !sortBy.equalsIgnoreCase("number");
+        boolean orderByDate = Util.isNullOrBlank(sortBy) || !sortBy.equalsIgnoreCase("number");
 
         //default sort order is descending -- used if not provided, or not valid
-        boolean orderByDesc = isNullOrEmpty(sortOrder) || !sortOrder.equalsIgnoreCase("asc");
+        boolean orderByDesc = Util.isNullOrBlank(sortOrder) || !sortOrder.equalsIgnoreCase("asc");
 
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("sender", sender)
                 .addValue("pageNum", page)
                 .addValue("messageNumber",
-                        isNullOrEmpty(messageNumber) ? null : Integer.parseInt(messageNumber, 16))
+                        Util.isNullOrBlank(messageNumber) ? null : Integer.parseInt(messageNumber, 16))
                 .addValue("messageType", messageType)
                 .addValue("fromDate", fromDate)
                 .addValue("toDate", toDate)
@@ -288,18 +200,28 @@ public class WEAController {
                         "FROM alert_db.cmac_polygon_coordinates " +
                         "WHERE CMACMessageNumber = " + result.getMessageNumberInt() + ";";
 
-                List<PolygonCoordinate> coordinates = jdbcTemplate.query(coordinatesQuery, new CMACCoordinateMapper());
+                List<Coordinate> coordinates = jdbcTemplate.query(coordinatesQuery, new CMACCoordinateMapper());
 
+                //if no polygon coordinates, look for circle coordinates
+                if (coordinates.size() == 0) {
+                    coordinatesQuery = "SELECT Latitude, Longitude " +
+                            "FROM alert_db.cmac_circle_coordinates " +
+                            "WHERE CMACMessageNumber = " + result.getMessageNumberInt() + ";";
+
+                    coordinates = jdbcTemplate.query(coordinatesQuery, new CMACCoordinateMapper());
+                }
+
+                //if no coordinates, use geocodes
                 if (coordinates.size() > 0) {
                     result.setPolygon(coordinates);
                 } else {
-                    String areaNameQuery = "SELECT AreaName " +
+                    String areaNameQuery = "SELECT CMASGeocode " +
                             "FROM alert_db.cmac_area_description " +
                             "WHERE CMACMessageNumber = " + result.getMessageNumberInt() + ";";
 
-                    List<String> areaNames = jdbcTemplate.queryForList(areaNameQuery, String.class);
+                    List<String> geocodes = jdbcTemplate.queryForList(areaNameQuery, String.class);
 
-                    result.setAreaNames(areaNames);
+                    result.setGeocodeList(geocodes);
                 }
             }
         } catch (BadSqlGrammarException e) {
