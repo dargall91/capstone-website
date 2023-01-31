@@ -107,21 +107,34 @@ const AppProvider = ({ children }) => {
     src += `${center[0]},${center[1]}&`;
 
     // Build the markers
-    src += `markers=size:tiny|`;
+    // src += `markers=size:tiny|`;
 
     // Attach the coordinates
     let length = Object.keys(coords).length;
-    let index = 0;
+    // let markerIndex = 0;
+    // coords.map((idx) => {
+    //   src += `${idx.lat},${idx.lon}`;
+    //   if (markerIndex !== length - 1) {
+    //     src += `|`;
+    //   }
+    //   markerIndex++;
+    // });
+
+    src += `path=weight:4|color:red|fillcolor:red|`;
+
+    let pathIndex = 0;
     coords.map((idx) => {
       src += `${idx.lat},${idx.lon}`;
-      if (index !== length) {
+      if (pathIndex !== length - 1) {
         src += `|`;
       }
-      length++;
+      pathIndex++;
     });
 
     // Finalize the URL
     src += `&size=300x150&maptype=roadmap&key=AIzaSyB0Zq3fWV9fXL-_v3A5DGIZXXMnu89A60g`;
+
+    console.log(src);
 
     return src;
   };
