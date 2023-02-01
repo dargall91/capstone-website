@@ -222,6 +222,18 @@ public class WEAController {
                     List<String> geocodes = jdbcTemplate.queryForList(areaNameQuery, String.class);
 
                     result.setGeocodeList(geocodes);
+
+                    String geocodeTypeQuery = "SELECT SAME " +
+                            "FROM alert_db.cmac_area_description " +
+                            "WHERE CMACMessageNumber = " + result.getMessageNumberInt() + ";";
+
+                    Boolean same = jdbcTemplate.queryForObject(geocodeTypeQuery, Boolean.class);
+
+                    if (Boolean.TRUE.equals(same)) {
+                        result.setGeocodeType("SAME");
+                    } else {
+                        result.setGeocodeType("UGC");
+                    }
                 }
             }
         } catch (BadSqlGrammarException e) {

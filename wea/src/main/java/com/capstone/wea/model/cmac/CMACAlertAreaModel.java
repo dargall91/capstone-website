@@ -137,6 +137,7 @@ public class CMACAlertAreaModel {
                     .addValue("AreaName", areaNames[i])
                     .addValue("CMASGeocode", geocodeList.get(i + startIndex))
                     .addValue("AreaId", areaId)
+                    .addValue("SAME", startIndex == 0)
                     .addValues(keyParams.getValues());
 
             paramList.add(params);
