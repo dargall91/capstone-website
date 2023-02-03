@@ -85,7 +85,6 @@ const AppProvider = ({ children }) => {
   };
 
   const getCenter = function (coords) {
-    let array = [];
     let minX, maxX, minY, maxY;
 
     coords.map((idx) => {
@@ -96,6 +95,35 @@ const AppProvider = ({ children }) => {
     });
 
     return [(minX + maxX) / 2, (minY + maxY) / 2];
+  };
+
+  const buildURL = (coords) => {
+    // Initial source url
+    let src = `https://maps.googleapis.com/maps/api/staticmap?center=`;
+
+    // Attach the center of the map
+    let center = [];
+    center = getCenter(coords);
+    src += `${center[0]},${center[1]}&`;
+
+    // Build the markers
+    src += `markers=size:tiny|`;
+
+    // Attach the coordinates
+    let length = Object.keys(coords).length;
+    let index = 0;
+    coords.map((idx) => {
+      src += `${idx.lat},${idx.lon}`;
+      if (index !== length) {
+        src += `|`;
+      }
+      length++;
+    });
+
+    // Finalize the URL
+    src += `&size=300x150&maptype=roadmap&key=AIzaSyB0Zq3fWV9fXL-_v3A5DGIZXXMnu89A60g`;
+
+    return src;
   };
 
   const buildFilters = ({ mType, mNum, frDate, toDate, sortBy, sortOrder }) => {
@@ -190,7 +218,7 @@ const AppProvider = ({ children }) => {
         buildFilters,
         modalImage,
         setModalImage,
-        getCenter,
+        buildURL,
       }}
     >
       {children}
