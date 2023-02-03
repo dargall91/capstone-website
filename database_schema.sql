@@ -4,7 +4,7 @@ USE `alert_db`;
 --
 -- Host: localhost    Database: alert_db
 -- ------------------------------------------------------
--- Server version	8.0.32-0buntu0.22.04.1
+-- Server version	8.0.32-0ubuntu0.22.04.2
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -45,10 +45,11 @@ DROP TABLE IF EXISTS `cmac_area_description`;
 CREATE TABLE `cmac_area_description` (
   `CMACMessageNumber` int NOT NULL,
   `CMACCapIdentifier` varchar(180) NOT NULL,
-  `AreaName` varchar(500) NOT NULL,
-  `CMASGeocode` varchar(20) NOT NULL,
-  `AreaId` int NOT NULL,
+  `AreaNames` varchar(500) NOT NULL,
+  `CMASGeocodes` varchar(20) NOT NULL,
   `SAME` varchar(45) NOT NULL,
+  `CMACPolygon` varchar(2000) DEFAULT NULL,
+  `CMACCircle` varchar(2000) DEFAULT NULL,
   KEY `CMACMessageNumber` (`CMACMessageNumber`,`CMACCapIdentifier`),
   CONSTRAINT `cmac_area_description_ibfk_1` FOREIGN KEY (`CMACMessageNumber`, `CMACCapIdentifier`) REFERENCES `cmac_message` (`CMACMessageNumber`, `CMACCapIdentifier`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -235,4 +236,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-01-30 18:04:02
+-- Dump completed on 2023-02-02 20:03:29

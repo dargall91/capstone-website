@@ -129,15 +129,15 @@ public class CMACAlertAreaModel {
             throw new Exception("Geocode count mismatch");
         }
 
-        //TODO: add another column to cmac_area_description: SAME (BIT), update addArea method for this
         List<SqlParameterSource> paramList = new ArrayList<>();
 
         for (int i = 0; i < areaNames.length; i++) {
             SqlParameterSource params = new MapSqlParameterSource()
-                    .addValue("AreaName", areaNames[i])
-                    .addValue("CMASGeocode", geocodeList.get(i + startIndex))
-                    .addValue("AreaId", areaId)
+                    .addValue("AreaNames", areaDescription)
+                    .addValue("CMASGeocodes", String.join(",", geocodeList))
                     .addValue("SAME", startIndex == 0)
+                    .addValue("CMACPolygon", polygon)
+                    .addValue("CMACCircle", circle)
                     .addValues(keyParams.getValues());
 
             paramList.add(params);

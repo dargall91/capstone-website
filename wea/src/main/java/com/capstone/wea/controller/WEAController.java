@@ -241,6 +241,7 @@ public class WEAController {
             throw new InternalError("Bad SQL Grammar");
         }
 
+        //TODO: deviceCount should be 90-95% of number that should have been hit
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode root = mapper.createObjectNode();
         root.set("messageStats", mapper.valueToTree(resultList.subList(0, Math.min(resultList.size(), 9))));
