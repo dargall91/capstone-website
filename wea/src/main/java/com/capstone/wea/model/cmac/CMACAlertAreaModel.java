@@ -69,7 +69,7 @@ public class CMACAlertAreaModel {
         return geocodeList;
     }
 
-    public void addArea(String areaDescription, String geocode) {
+    public void addArea(String areaDescription, String geocodes, String polygon, String circle) {
         if (this.areaDescription != null) {
             this.areaDescription += "; " + areaDescription;
         } else {
@@ -80,13 +80,13 @@ public class CMACAlertAreaModel {
             capGeocodeList = new ArrayList<>();
         }
 
-        capGeocodeList.add(new CMACCapGeocodeModel("SAME", geocode));
+        //capGeocodeList.add(new CMACCapGeocodeModel("SAME", geocodes));
 
         if (geocodeList == null) {
             geocodeList = new ArrayList<>();
         }
 
-        geocodeList.add(geocode);
+        geocodeList = List.of(geocodes.split(","));
     }
 
     public void addToDatabase(JdbcTemplate jdbcTemplate, int messageNumber, String capIdentifier, int areaId)
@@ -131,18 +131,15 @@ public class CMACAlertAreaModel {
 
         List<SqlParameterSource> paramList = new ArrayList<>();
 
-        for (int i = 0; i < areaNames.length; i++) {
-            SqlParameterSource params = new MapSqlParameterSource()
-                    .addValue("AreaNames", areaDescription)
-                    .addValue("CMASGeocodes", String.join(",", geocodeList))
-                    .addValue("SAME", startIndex == 0)
-                    .addValue("CMACPolygon", polygon)
-                    .addValue("CMACCircle", circle)
-                    .addValues(keyParams.getValues());
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("AreaNames", areaDescription)
+                .addValue("CMASGeocodes", String.join(",", geocodeList))
+                .addValue("SAME", startIndex == 0)
+                .addValue("CMACPolygon", polygon)
+                .addValue("CMACCircle", circle)
+                .addValues(keyParams.getValues());
 
-            paramList.add(params);
-        }
-
+        paramList.add(params);
         //batch throws exception if any insert fails, no need to validate
         SqlParameterSource[] paramArray = paramList.toArray(new SqlParameterSource[paramList.size()]);
         simpleJdbcInsert.executeBatch(paramArray);

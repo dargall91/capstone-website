@@ -215,13 +215,13 @@ public class WEAController {
                 if (coordinates.size() > 0) {
                     result.setPolygon(coordinates);
                 } else {
-                    String areaNameQuery = "SELECT CMASGeocode " +
+                    String areaNameQuery = "SELECT CMASGeocodes " +
                             "FROM alert_db.cmac_area_description " +
                             "WHERE CMACMessageNumber = " + result.getMessageNumberInt() + ";";
 
-                    List<String> geocodes = jdbcTemplate.queryForList(areaNameQuery, String.class);
+                    String geocodeString = jdbcTemplate.queryForObject(areaNameQuery, String.class);
 
-                    result.setGeocodeList(geocodes);
+                    result.setGeocodeList(List.of(geocodeString.split(",")));
 
                     String geocodeTypeQuery = "SELECT SAME " +
                             "FROM alert_db.cmac_area_description " +
