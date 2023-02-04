@@ -54,6 +54,8 @@ public class MessageStatsResult {
     @JsonProperty("geocodes")
     private List<String> geocodeList;
 
+    @JsonProperty String geocodeType;
+
     /**
      * Constructs a new MessageStatsResult object with the items in the map
      * @param map
@@ -214,5 +216,9 @@ public class MessageStatsResult {
      */
     public void setGeocodeList(List<String> geocodeList) {
         this.geocodeList = geocodeList;
+    }
+
+    public void setGeocodeType(String geocodeType) {
+        this.geocodeType = geocodeType;
     }
 }

@@ -79,70 +79,52 @@ public class CMACMessageModel {
 
         addAlertTextList(jdbcTemplate.query(query, new CMACAlertTextMapper()));
 
-        query = "SELECT COUNT(DISTINCT AreaID) " +
+        List<CMACAlertAreaModel> cmacAreaList = new ArrayList<>();
+        cmacAreaList.add(new CMACAlertAreaModel());
+
+        //Get CMAC AlertArea data
+        query = "SELECT AreaNames, CMASGeocodes, CMACPolygon, CMACCircle " +
                 "FROM alert_db.cmac_area_description " +
                 "WHERE CMACMessageNumber = " + messageNumber + " " +
                 "AND CMACCapIdentifier = '" + capIdentifier + "' " +
-                "GROUP BY AreaId;";
-
-        int alertAreaCount = jdbcTemplate.queryForObject(query, Integer.class);
-
-        List<CMACAlertAreaModel> cmacAreaList = new ArrayList<>(alertAreaCount);
-
-        for (int i = 0; i < alertAreaCount; i++) {
-            cmacAreaList.add(new CMACAlertAreaModel());
-        }
-
-        //Get CMAC AlertArea data
-        query = "SELECT AreaName, CMASGeocode, AreaId " +
-                "FROM alert_db.cmac_area_description " +
-                "WHERE CMACMessageNumber = " + messageNumber + " " +
-                "AND CMACCapIdentifier = '" + capIdentifier + "';";
+                "LIMIT 1;";
 
         jdbcTemplate.query(query, new CMACAlertAreaMapper(cmacAreaList));
 
         //polygon coordinates
-        for (int i = 0; i < alertAreaCount; i++) {
-            query = "SELECT Latitude, Longitude " +
-                    "FROM alert_db.cmac_polygon_coordinates " +
-                    "WHERE CMACMessageNumber = " + messageNumber + " " +
-                    "AND CMACCapIdentifier = '" + capIdentifier + "' " +
-                    "AND AreaId = " + i + ";";
+        query = "SELECT Latitude, Longitude " +
+                "FROM alert_db.cmac_polygon_coordinates " +
+                "WHERE CMACMessageNumber = " + messageNumber + " " +
+                "AND CMACCapIdentifier = '" + capIdentifier + "' " +
+                "AND AreaId = " + 1 + ";";
 
-            List<String> polyCoordList = jdbcTemplate.query(query, new CoordinatesMapper());
+        List<String> polyCoordList = jdbcTemplate.query(query, new CoordinatesMapper());
 
-            StringBuilder polygon = new StringBuilder();
-            for (String polyPair : polyCoordList) {
-                if (!polygon.toString().isBlank()) {
-                    polygon.append(",").append(polyPair);
-                } else {
-                    polygon.append(polyPair);
-                }
+        StringBuilder polygon = new StringBuilder();
+        for (String polyPair : polyCoordList) {
+            if (!polygon.toString().isBlank()) {
+                polygon.append(",").append(polyPair);
+            } else {
+                polygon.append(polyPair);
             }
-
-            cmacAreaList.get(i).setPolygon(String.valueOf(polygon));
         }
 
         //circle coordinates
-        for (int i = 0; i < alertAreaCount; i++) {
-            query = "SELECT Latitude, Longitude " +
-                    "FROM alert_db.cmac_circle_coordinates " +
-                    "WHERE CMACMessageNumber = " + messageNumber + " " +
-                    "AND CMACCapIdentifier = '" + capIdentifier + "' " +
-                    "AND AreaId = " + i + ";";
+        query = "SELECT Latitude, Longitude " +
+                "FROM alert_db.cmac_circle_coordinates " +
+                "WHERE CMACMessageNumber = " + messageNumber + " " +
+                "AND CMACCapIdentifier = '" + capIdentifier + "' " +
+                "AND AreaId = " + 1 + ";";
 
-            List<String> circCoordList = jdbcTemplate.query(query, new CoordinatesMapper());
+        List<String> circCoordList = jdbcTemplate.query(query, new CoordinatesMapper());
 
-            StringBuilder circle = new StringBuilder();
-            for (String circlePair : circCoordList) {
-                if (!circle.toString().isBlank()) {
-                    circle.append(",").append(circlePair);
-                } else {
-                    circle.append(circlePair);
-                }
+        StringBuilder circle = new StringBuilder();
+        for (String circlePair : circCoordList) {
+            if (!circle.toString().isBlank()) {
+                circle.append(",").append(circlePair);
+            } else {
+                circle.append(circlePair);
             }
-
-            cmacAreaList.get(i).setPolygon(String.valueOf(circle));
         }
 
         addAlertAreaList(cmacAreaList);

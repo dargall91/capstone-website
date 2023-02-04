@@ -215,13 +215,25 @@ public class WEAController {
                 if (coordinates.size() > 0) {
                     result.setPolygon(coordinates);
                 } else {
-                    String areaNameQuery = "SELECT CMASGeocode " +
+                    String areaNameQuery = "SELECT CMASGeocodes " +
                             "FROM alert_db.cmac_area_description " +
                             "WHERE CMACMessageNumber = " + result.getMessageNumberInt() + ";";
 
-                    List<String> geocodes = jdbcTemplate.queryForList(areaNameQuery, String.class);
+                    String geocodeString = jdbcTemplate.queryForObject(areaNameQuery, String.class);
 
-                    result.setGeocodeList(geocodes);
+                    result.setGeocodeList(List.of(geocodeString.split(",")));
+
+                    String geocodeTypeQuery = "SELECT SAME " +
+                            "FROM alert_db.cmac_area_description " +
+                            "WHERE CMACMessageNumber = " + result.getMessageNumberInt() + ";";
+
+                    Boolean same = jdbcTemplate.queryForObject(geocodeTypeQuery, Boolean.class);
+
+                    if (Boolean.TRUE.equals(same)) {
+                        result.setGeocodeType("SAME");
+                    } else {
+                        result.setGeocodeType("UGC");
+                    }
                 }
             }
         } catch (BadSqlGrammarException e) {
@@ -229,6 +241,7 @@ public class WEAController {
             throw new InternalError("Bad SQL Grammar");
         }
 
+        //TODO: deviceCount should be 90-95% of number that should have been hit
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode root = mapper.createObjectNode();
         root.set("messageStats", mapper.valueToTree(resultList.subList(0, Math.min(resultList.size(), 9))));

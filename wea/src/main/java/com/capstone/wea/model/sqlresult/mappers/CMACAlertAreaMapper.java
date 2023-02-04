@@ -15,7 +15,8 @@ public class CMACAlertAreaMapper implements RowMapper<Boolean> {
     }
     @Override
     public Boolean mapRow(ResultSet rs, int rowNum) throws SQLException {
-        alertAreaList.get(rs.getInt("areaId")).addArea(rs.getString("AreaName"), rs.getString("CMASGeocode"));
+        alertAreaList.get(0).addArea(rs.getString("AreaNames"), rs.getString("CMASGeocodes"),
+                rs.getString("CMACPolygon"), rs.getString("CMACCircle"));
 
         return true;
     }

@@ -53,7 +53,7 @@ public class IPAWSInterface {
             ipawsUrl.append(WEA_FEED);
         }
 
-        ZonedDateTime dateTime = ZonedDateTime.now(Clock.systemUTC()).withNano( 0).minusMinutes(00);
+        ZonedDateTime dateTime = ZonedDateTime.now(Clock.systemUTC()).withNano( 0).minusMinutes(30);
         ipawsUrl.append(dateTime.format(DateTimeFormatter.ISO_INSTANT))
                 .append(IPAWS_PIN_PARAMETER);
 
