@@ -97,33 +97,36 @@ const AppProvider = ({ children }) => {
     return [(minX + maxX) / 2, (minY + maxY) / 2];
   };
 
-  const buildURL = (coords) => {
+  const buildURL = ({ coordinates, geocodes }) => {
     // Initial source url
     let src = `https://maps.googleapis.com/maps/api/staticmap?center=`;
 
-    // Attach the center of the map
+    if (coordinates !== null) {
+      src += coordinatesBuilder(coordinates);
+    } else {
+      src += `&markers=48151|48253|48441|48059`;
+    }
+
+    // Finalize the URL
+    src += `&size=300x150&maptype=roadmap&key=AIzaSyB0Zq3fWV9fXL-_v3A5DGIZXXMnu89A60g`;
+
+    return src;
+  };
+
+  const coordinatesBuilder = (coordinates) => {
+    let src = ``;
+
     let center = [];
-    center = getCenter(coords);
+    center = getCenter(coordinates);
     src += `${center[0]},${center[1]}&`;
 
-    // Build the markers
-    // src += `markers=size:tiny|`;
-
     // Attach the coordinates
-    let length = Object.keys(coords).length;
-    // let markerIndex = 0;
-    // coords.map((idx) => {
-    //   src += `${idx.lat},${idx.lon}`;
-    //   if (markerIndex !== length - 1) {
-    //     src += `|`;
-    //   }
-    //   markerIndex++;
-    // });
+    let length = Object.keys(coordinates).length;
 
     src += `path=weight:4|color:red|fillcolor:red|`;
 
     let pathIndex = 0;
-    coords.map((idx) => {
+    coordinates.map((idx) => {
       src += `${idx.lat},${idx.lon}`;
       if (pathIndex !== length - 1) {
         src += `|`;
@@ -131,13 +134,10 @@ const AppProvider = ({ children }) => {
       pathIndex++;
     });
 
-    // Finalize the URL
-    src += `&size=300x150&maptype=roadmap&key=AIzaSyB0Zq3fWV9fXL-_v3A5DGIZXXMnu89A60g`;
-
-    console.log(src);
-
     return src;
   };
+
+  const geocodesBuilder = () => {};
 
   const buildFilters = ({ mType, mNum, frDate, toDate, sortBy, sortOrder }) => {
     let filterString = `?${mType !== "" ? "messageType=" : ""}${mType}${
