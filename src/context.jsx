@@ -84,7 +84,7 @@ const AppProvider = ({ children }) => {
     }
   };
 
-  const getCenter = function (coords) {
+  const getCenter = async (coords) => {
     let minX, maxX, minY, maxY;
 
     coords.map((idx) => {
@@ -97,6 +97,28 @@ const AppProvider = ({ children }) => {
     return [(minX + maxX) / 2, (minY + maxY) / 2];
   };
 
+  const getGeocodeCenter = async (geo) => {
+    let codes = [`fisher+tx`, `abilene+tx`, `houston+tx`];
+
+    const container = [];
+
+    codes.forEach(async (idx) => {
+      let url = `https://maps.googleapis.com/maps/api/geocode/json?address=${idx}&key=AIzaSyB0Zq3fWV9fXL-_v3A5DGIZXXMnu89A60g`;
+
+      const result = await axios(url);
+
+      let item = {
+        lat: result.data.results[0].geometry.location.lat,
+        lon: result.data.results[0].geometry.location.lng,
+      };
+      container.push(item);
+    });
+
+    let center = [];
+    center = await getCenter(container);
+    console.log(center);
+  };
+
   const buildURL = ({ coordinates, geocodes }) => {
     // Initial source url
     let src = `https://maps.googleapis.com/maps/api/staticmap?center=`;
@@ -104,7 +126,7 @@ const AppProvider = ({ children }) => {
     if (coordinates !== null) {
       src += coordinatesBuilder(coordinates);
     } else {
-      src += `&markers=48151|48253|48441|48059`;
+      src += geocodesBuilder(geocodes);
     }
 
     // Finalize the URL
@@ -137,7 +159,35 @@ const AppProvider = ({ children }) => {
     return src;
   };
 
-  const geocodesBuilder = () => {};
+  const geocodesBuilder = (geocodes) => {
+    let src = ``;
+
+    let length = Object.keys(geocodes).length;
+
+    // Since geocodes do not contain coordinates, we are letting
+    // the map API viewport decide where the center of the map is
+
+    src += `path=weight:4|color:red|fillcolor:red|`;
+
+    let pathIndex = 0;
+
+    // geocodes.array.forEach((idx) => {
+    //   src += `${geocodes[idx]}`;
+    //   if (idx !== geocodes.length - 1) {
+    //     src += `|`;
+    //   }
+    // });
+
+    geocodes.map((idx) => {
+      src += `${geocodes[idx]}`;
+      if (pathIndex !== length - 1) {
+        src += `|`;
+      }
+      pathIndex++;
+    });
+
+    return src;
+  };
 
   const buildFilters = ({ mType, mNum, frDate, toDate, sortBy, sortOrder }) => {
     let filterString = `?${mType !== "" ? "messageType=" : ""}${mType}${
