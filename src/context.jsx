@@ -84,7 +84,7 @@ const AppProvider = ({ children }) => {
     }
   };
 
-  const getCenter = async (coords) => {
+  const getCenter = (coords) => {
     let minX, maxX, minY, maxY;
 
     coords.map((idx) => {
@@ -155,6 +155,7 @@ const AppProvider = ({ children }) => {
       }
       pathIndex++;
     });
+    console.log(src);
 
     return src;
   };
@@ -167,7 +168,7 @@ const AppProvider = ({ children }) => {
     // Since geocodes do not contain coordinates, we are letting
     // the map API viewport decide where the center of the map is
 
-    src += `path=weight:4|color:red|fillcolor:red|`;
+    src += `&path=weight:4|color:red|fillcolor:red|`;
 
     let pathIndex = 0;
 
@@ -179,12 +180,14 @@ const AppProvider = ({ children }) => {
     // });
 
     geocodes.map((idx) => {
-      src += `${geocodes[idx]}`;
+      src += `${idx}`;
       if (pathIndex !== length - 1) {
         src += `|`;
       }
       pathIndex++;
     });
+
+    console.log(src);
 
     return src;
   };
