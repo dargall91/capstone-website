@@ -49,15 +49,12 @@ public class MessageStatsResult {
     private int displayedAfterExpiredCount;
 
     @JsonProperty("coordinates")
-    private List<PolygonCoordinate> polygon;
+    private List<Coordinate> polygon;
 
-    @JsonProperty("areas")
-    private List<String> areaNames;
+    @JsonProperty("geocodes")
+    private List<String> geocodeList;
 
-    public MessageStatsResult(int messageNumber) {
-        messageNumberInt = messageNumber;
-        this.messageNumber = String.format("%08X", messageNumber);
-    }
+    @JsonProperty String geocodeType;
 
     /**
      * Constructs a new MessageStatsResult object with the items in the map
@@ -65,7 +62,7 @@ public class MessageStatsResult {
      */
     public MessageStatsResult(LinkedCaseInsensitiveMap<Object> map) {
         messageNumberInt = (int) Objects.requireNonNull(map.get("CMACMessageNumber"));
-        messageNumber = Integer.toString(messageNumberInt);
+        messageNumber = String.format("%08X", messageNumberInt);
         date = Objects.requireNonNull(map.get("CMACDateTime")).toString();
         messageType = Objects.requireNonNull(map.get("CMACMessageType")).toString();
         deviceCount = Integer.parseInt(Objects.requireNonNull(map.get("DeviceCount")).toString());
@@ -208,16 +205,20 @@ public class MessageStatsResult {
      *
      * @param polygon
      */
-    public void setPolygon(List<PolygonCoordinate> polygon) {
+    public void setPolygon(List<Coordinate> polygon) {
         this.polygon = polygon;
     }
 
     /**
      * Sets the list of area names
      *
-     * @param areaNames
+     * @param geocodeList
      */
-    public void setAreaNames(List<String> areaNames) {
-        this.areaNames = areaNames;
+    public void setGeocodeList(List<String> geocodeList) {
+        this.geocodeList = geocodeList;
+    }
+
+    public void setGeocodeType(String geocodeType) {
+        this.geocodeType = geocodeType;
     }
 }

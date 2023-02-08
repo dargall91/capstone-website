@@ -1,15 +1,15 @@
 package com.capstone.wea.model.sqlresult.mappers;
 
-import com.capstone.wea.model.sqlresult.PolygonCoordinate;
+import com.capstone.wea.model.sqlresult.Coordinate;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class CMACCoordinateMapper implements RowMapper<PolygonCoordinate> {
+public class CMACCoordinateMapper implements RowMapper<Coordinate> {
     @Override
-    public PolygonCoordinate mapRow(ResultSet rs, int rowNum) throws SQLException {
-        PolygonCoordinate coordinate = new PolygonCoordinate(rs.getString("Latitude"), rs.getString("Longitude"));
+    public Coordinate mapRow(ResultSet rs, int rowNum) throws SQLException {
+        Coordinate coordinate = new Coordinate(rs.getString("Latitude"), rs.getString("Longitude"));
 
         return coordinate;
     }

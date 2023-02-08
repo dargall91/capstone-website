@@ -1,10 +1,10 @@
 CREATE DATABASE  IF NOT EXISTS `alert_db` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `alert_db`;
--- MySQL dump 10.13  Distrib 8.0.31, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.32, for Linux (x86_64)
 --
 -- Host: localhost    Database: alert_db
 -- ------------------------------------------------------
--- Server version	8.0.31-0ubuntu0.22.04.1
+-- Server version	8.0.32-0ubuntu0.22.04.2
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -45,9 +45,11 @@ DROP TABLE IF EXISTS `cmac_area_description`;
 CREATE TABLE `cmac_area_description` (
   `CMACMessageNumber` int NOT NULL,
   `CMACCapIdentifier` varchar(180) NOT NULL,
-  `AreaName` varchar(500) NOT NULL,
-  `CMASGeocode` varchar(20) NOT NULL,
-  `AreaId` int NOT NULL,
+  `AreaNames` varchar(500) NOT NULL,
+  `CMASGeocodes` varchar(100) NOT NULL,
+  `SAME` bit(1) NOT NULL,
+  `CMACPolygon` varchar(2000) DEFAULT NULL,
+  `CMACCircle` varchar(2000) DEFAULT NULL,
   KEY `CMACMessageNumber` (`CMACMessageNumber`,`CMACCapIdentifier`),
   CONSTRAINT `cmac_area_description_ibfk_1` FOREIGN KEY (`CMACMessageNumber`, `CMACCapIdentifier`) REFERENCES `cmac_message` (`CMACMessageNumber`, `CMACCapIdentifier`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -93,7 +95,7 @@ CREATE TABLE `cmac_message` (
   `CMACCertainty` varchar(20) NOT NULL,
   `CMACReferencedCapIdentifier` varchar(180) DEFAULT NULL,
   PRIMARY KEY (`CMACMessageNumber`,`CMACCapIdentifier`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -139,7 +141,7 @@ CREATE TABLE `device_upload_data` (
   PRIMARY KEY (`UploadID`),
   KEY `CMACMessageNumber` (`CMACMessageNumber`,`CMACCapIdentifier`),
   CONSTRAINT `device_upload_data_ibfk_1` FOREIGN KEY (`CMACMessageNumber`, `CMACCapIdentifier`) REFERENCES `cmac_message` (`CMACMessageNumber`, `CMACCapIdentifier`)
-) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -208,7 +210,7 @@ DELIMITER ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `GetOldestMessage`(
-	out messageNumber VARCHAR(8),
+	out messageNumber INT,
     out capIdentifier VARCHAR(180)
 )
 BEGIN
@@ -234,4 +236,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-01-20 23:16:14
+-- Dump completed on 2023-02-03 18:58:09
