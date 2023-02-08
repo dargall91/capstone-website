@@ -6,9 +6,6 @@ const NavOptions = () => {
   const next = fullData.next;
   const prev = fullData.prev;
 
-  console.log(prev);
-  console.log(next);
-
   return (
     <section className="nav-options">
       <div className="nav">

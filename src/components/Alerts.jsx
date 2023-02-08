@@ -22,9 +22,16 @@ const Alerts = () => {
   return (
     <section className="section-center">
       {dbAlertList.map((alert) => {
-        const { messageNumber, date, messageType, coordinates } = alert;
+        const { messageNumber, date, messageType, coordinates, geocodes } =
+          alert;
 
-        const source = buildURL(coordinates);
+        let location = {
+          coordinates: coordinates,
+          geocodes: geocodes,
+        };
+
+        const source = buildURL(location);
+
         // const source = "";
 
         return (

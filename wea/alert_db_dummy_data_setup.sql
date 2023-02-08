@@ -56,7 +56,7 @@ CREATE TABLE `cmac_area_description` (
   `CMACMessageNumber` int NOT NULL,
   `CMACCapIdentifier` varchar(180) NOT NULL,
   `AreaNames` varchar(500) NOT NULL,
-  `CMASGeocodes` varchar(20) NOT NULL,
+  `CMASGeocodes` varchar(200) NOT NULL,
   `SAME` bit(1) NOT NULL,
   `CMACPolygon` varchar(2000) DEFAULT NULL,
   `CMACCircle` varchar(2000) DEFAULT NULL,

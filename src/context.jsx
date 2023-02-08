@@ -84,7 +84,7 @@ const AppProvider = ({ children }) => {
     }
   };
 
-  const getCenter = function (coords) {
+  const getCenter = (coords) => {
     let minX, maxX, minY, maxY;
 
     coords.map((idx) => {
@@ -97,42 +97,95 @@ const AppProvider = ({ children }) => {
     return [(minX + maxX) / 2, (minY + maxY) / 2];
   };
 
-  const buildURL = (coords) => {
+  const getGeocodeCenter = async (geo) => {
+    let codes = [`fisher+tx`, `abilene+tx`, `houston+tx`];
+
+    const container = [];
+
+    codes.forEach(async (idx) => {
+      let url = `https://maps.googleapis.com/maps/api/geocode/json?address=${idx}&key=AIzaSyB0Zq3fWV9fXL-_v3A5DGIZXXMnu89A60g`;
+
+      const result = await axios(url);
+
+      let item = {
+        lat: result.data.results[0].geometry.location.lat,
+        lon: result.data.results[0].geometry.location.lng,
+      };
+      container.push(item);
+    });
+
+    let center = [];
+    center = await getCenter(container);
+    console.log(center);
+  };
+
+  const buildURL = ({ coordinates, geocodes }) => {
     // Initial source url
     let src = `https://maps.googleapis.com/maps/api/staticmap?center=`;
 
-    // Attach the center of the map
+    if (coordinates !== null) {
+      src += coordinatesBuilder(coordinates);
+    } else {
+      src += geocodesBuilder(geocodes);
+    }
+
+    // Finalize the URL
+    src += `&size=300x150&maptype=roadmap&key=AIzaSyB0Zq3fWV9fXL-_v3A5DGIZXXMnu89A60g`;
+
+    return src;
+  };
+
+  const coordinatesBuilder = (coordinates) => {
+    let src = ``;
+
     let center = [];
-    center = getCenter(coords);
+    center = getCenter(coordinates);
     src += `${center[0]},${center[1]}&`;
 
-    // Build the markers
-    // src += `markers=size:tiny|`;
-
     // Attach the coordinates
-    let length = Object.keys(coords).length;
-    // let markerIndex = 0;
-    // coords.map((idx) => {
-    //   src += `${idx.lat},${idx.lon}`;
-    //   if (markerIndex !== length - 1) {
-    //     src += `|`;
-    //   }
-    //   markerIndex++;
-    // });
+    let length = Object.keys(coordinates).length;
 
     src += `path=weight:4|color:red|fillcolor:red|`;
 
     let pathIndex = 0;
-    coords.map((idx) => {
+    coordinates.map((idx) => {
       src += `${idx.lat},${idx.lon}`;
       if (pathIndex !== length - 1) {
         src += `|`;
       }
       pathIndex++;
     });
+    console.log(src);
 
-    // Finalize the URL
-    src += `&size=300x150&maptype=roadmap&key=AIzaSyB0Zq3fWV9fXL-_v3A5DGIZXXMnu89A60g`;
+    return src;
+  };
+
+  const geocodesBuilder = (geocodes) => {
+    let src = ``;
+
+    let length = Object.keys(geocodes).length;
+
+    // Since geocodes do not contain coordinates, we are letting
+    // the map API viewport decide where the center of the map is
+
+    src += `&path=weight:4|color:red|fillcolor:red|`;
+
+    let pathIndex = 0;
+
+    // geocodes.array.forEach((idx) => {
+    //   src += `${geocodes[idx]}`;
+    //   if (idx !== geocodes.length - 1) {
+    //     src += `|`;
+    //   }
+    // });
+
+    geocodes.map((idx) => {
+      src += `${idx}`;
+      if (pathIndex !== length - 1) {
+        src += `|`;
+      }
+      pathIndex++;
+    });
 
     console.log(src);
 
