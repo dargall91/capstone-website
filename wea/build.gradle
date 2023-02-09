@@ -40,3 +40,5 @@ tasks.register('prod') {
 		args = ["--spring.profiles.active=prod"]
 	}
 }
+
+prod.configure {finalizedBy(bootRun)}
