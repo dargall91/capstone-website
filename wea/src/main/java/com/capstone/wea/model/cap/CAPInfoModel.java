@@ -45,6 +45,62 @@ public class CAPInfoModel {
     @JacksonXmlElementWrapper(useWrapping = false)
     private List<CAPAreaModel> area;
 
+    public String getCategory() {
+        return category;
+    }
+
+    public String getEvent() {
+        return event;
+    }
+
+    public String getResponseType() {
+        return responseType;
+    }
+
+    public String getUrgency() {
+        return urgency;
+    }
+
+    public String getSeverity() {
+        return severity;
+    }
+
+    public String getCertainty() {
+        return certainty;
+    }
+
+    public CAPEventCodeModel getEventCode() {
+        return eventCode;
+    }
+
+    public String getExpires() {
+        return expires;
+    }
+
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public String getHeadline() {
+        return headline;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getInstruction() {
+        return instruction;
+    }
+
+    public String getContact() {
+        return contact;
+    }
+
+    public List<CAPAreaModel> getArea() {
+        return area;
+    }
+
     public CMACAlertInfoModel toCmac() {
         CMACAlertInfoModel cmac = new CMACAlertInfoModel();
 

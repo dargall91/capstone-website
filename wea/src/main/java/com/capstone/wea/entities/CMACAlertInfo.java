@@ -1,5 +1,7 @@
 package com.capstone.wea.entities;
 
+import com.capstone.wea.model.cap.CAPAreaModel;
+import com.capstone.wea.model.cap.CAPInfoModel;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
@@ -28,8 +30,6 @@ public class CMACAlertInfo {
     private String expires;
     @JsonProperty("CMAC_sender_name")
     private String senderName;
-    @JsonProperty("CMAC_referenced_message_number")
-    private String referenceNumber;
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name="AlertInfoId")
     @JsonProperty("CMAC_Alert_Area")
@@ -40,4 +40,21 @@ public class CMACAlertInfo {
     @JsonProperty("CMAC_Alert_Text")
     @JacksonXmlElementWrapper(useWrapping = false)
     private List<CMACAlertText> alertTextList = new ArrayList<>();
+
+    public CMACAlertInfo() { }
+
+    public CMACAlertInfo(CAPInfoModel capInfoModel) {
+        category = capInfoModel.getCategory();
+        severity = capInfoModel.getSeverity();
+        urgency = capInfoModel.getUrgency();
+        certainty = capInfoModel.getCertainty();
+        expires = capInfoModel.getExpires();
+        senderName = capInfoModel.getSenderName();
+
+        for (CAPAreaModel capAreaModel : capInfoModel.getArea()) {
+            alertAreaList.add(new CMACAlertArea(capAreaModel));
+        }
+
+        alertTextList.add(new CMACAlertText(capInfoModel.getHeadline(), capInfoModel.getDescription()));
+    }
 }

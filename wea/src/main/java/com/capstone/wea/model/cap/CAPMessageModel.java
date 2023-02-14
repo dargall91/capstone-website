@@ -30,6 +30,34 @@ public class CAPMessageModel {
     @JsonProperty("info")
     private CAPInfoModel info;
 
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public String getSender() {
+        return sender;
+    }
+
+    public String getSent() {
+        return sent;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public String getMsgType() {
+        return msgType;
+    }
+
+    public String getScope() {
+        return scope;
+    }
+
+    public CAPInfoModel getInfo() {
+        return info;
+    }
+
     @JsonIgnoreProperties
     public CMACMessageModel toCmac() {
         CMACMessageModel cmac = new CMACMessageModel();

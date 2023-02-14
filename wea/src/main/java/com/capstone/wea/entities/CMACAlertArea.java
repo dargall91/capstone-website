@@ -1,5 +1,7 @@
 package com.capstone.wea.entities;
 
+import com.capstone.wea.model.cap.CAPAreaModel;
+import com.capstone.wea.model.cap.CAPGeocodeModel;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -34,4 +36,20 @@ public class CMACAlertArea {
     @JsonProperty("CMAC_cap_geocode")
     @JacksonXmlElementWrapper(useWrapping = false)
     private List<CMACCapGeocode> capGeocodeList = new ArrayList<>();
+
+    public CMACAlertArea() { }
+
+    public CMACAlertArea(CAPAreaModel capAreaModel) {
+        areaDescription = capAreaModel.getAreaDesc();
+        polygon = capAreaModel.getPolygon();
+        circle = capAreaModel.getCircle();
+
+        for (CAPGeocodeModel capGeocodeModel : capAreaModel.getGeocode()) {
+            capGeocodeList.add(new CMACCapGeocode(capGeocodeModel));
+
+            if (capGeocodeModel.getValueName().equals("SAME")) {
+                geocodeList.add(capGeocodeModel.getValue());
+            }
+        }
+    }
 }

@@ -23,4 +23,22 @@ public class CMACAlertText {
     private int longLength;
     @JsonProperty("CMAC_long_text_alert_message")
     private String longMessage;
+
+    public CMACAlertText() { }
+
+    public CMACAlertText(String headline, String description) {
+        if (headline == null || headline.isBlank()) {
+            headline = "No short message provided";
+        }
+
+        if (description == null || description.isBlank()) {
+            description = "No long message provided";
+        }
+
+        language = "English";
+        shortLength = headline.length();
+        shortMessage = headline.replace("\n", " ");
+        longLength = description.length();
+        longMessage = description.replace("\n", " ");
+    }
 }
