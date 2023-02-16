@@ -7,6 +7,6 @@ import org.springframework.data.repository.query.Param;
 import java.time.OffsetDateTime;
 
 public interface MessageRepository extends JpaRepository<CMACMessage, Integer> {
-    CMACMessage findFirstByExpiresBefore(@Param("now") OffsetDateTime now);
+    CMACMessage findFirstByExpiresAfter(@Param("now") OffsetDateTime now);
     CMACMessage findByCapIdentifier(String capIdentifier);
 }

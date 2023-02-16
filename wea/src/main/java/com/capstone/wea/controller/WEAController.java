@@ -58,7 +58,7 @@ public class WEAController {
 
         //first check for oldest non-expired messages in database
         OffsetDateTime now = ZonedDateTime.now(ZoneOffset.UTC).toOffsetDateTime();
-        CMACMessage oldestMessage = messageRepository.findFirstByExpiresBefore(now);
+        CMACMessage oldestMessage = messageRepository.findFirstByExpiresAfter(now);
 
         if (oldestMessage != null) {
             return ResponseEntity.ok(oldestMessage);
