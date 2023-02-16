@@ -4,23 +4,14 @@ This document provides an overview on how to start the server and use the API.
 
 ## Database Setup
 
-Before running this application, make sure your database is up-to-date with the latest schema and has some sample 
-data to query. You can use Alex's `database_schema.sql` query to set up the database and then created your own sample 
-data, or you can use the `alert_db_dummy_data_setup.sql` query found this project's root directory to create both the 
-schema and populate it with sample data. It is recommended that you re-run one of these queries at the beginning of each
-sprint and anytime you pull down the latest changes related to the server to make sure your local database works as
-intended.
-
-If you are making changes to the database schema, **DO NOT** directly modify the `alert_db_dummy_data_setup.sql` file. 
-These changes should be made in the `database_schema.sql`. The `alert_db_dummy_data.sql` file is an export created by
-MySQL and any changes made will be overwritten if a new export is produced. It may also fail to execute because it can 
-make the insert statements invalid.
+The database will not automatically create and update itself just by running the application.
 
 ## Starting the Server
 
 Java JDK 17 is required to run this project. This SpringBoot application can be run in your IDE as you would any other 
-application, or by navigating to this project's root directory in the terminal and using the `./gradlew bootRun` 
-command in linux, or `gradle bootRun` in Windows. 
+application, or by executing gradle commands in the terminal.  There are now two different builds you can use for 
+the application. To run the dev build, use the command `./gradlew bootRun`. To run the prod build, use the command
+`./gradlew prod`.
 
 ## Making API Requests
 

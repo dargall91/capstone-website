@@ -17,9 +17,27 @@ public class CAPAreaModel {
     private String areaDesc;
     @JsonProperty("polygon")
     private String polygon;
+    @JsonProperty("circle")
+    private String circle;
     @JsonProperty("geocode")
     @JacksonXmlElementWrapper(useWrapping = false)
     private List<CAPGeocodeModel> geocode;
+
+    public String getAreaDesc() {
+        return areaDesc;
+    }
+
+    public String getPolygon() {
+        return polygon;
+    }
+
+    public String getCircle() {
+        return circle;
+    }
+
+    public List<CAPGeocodeModel> getGeocode() {
+        return geocode;
+    }
 
     public CMACAlertAreaModel toCmac() {
         CMACAlertAreaModel cmac = new CMACAlertAreaModel();
