@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 import javax.persistence.*;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 @Entity
 @JacksonXmlRootElement(localName = "CMAC_Alert_Attributes")
@@ -13,13 +15,14 @@ public class CMACMessage {
     @Id
     @JsonIgnore
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int messageNumber;
+    private Integer messageNumber;
     @JsonProperty("Cmac_cap_identifier")
+    @Column(length = Integer.MAX_VALUE)
     private String capIdentifier;
     @JsonProperty("CMAC_sender")
     private String sender;
     @JsonProperty("CMAC_sent_date_time")
-    private String sentDateTime;
+    private OffsetDateTime sentDateTime;
     @JsonProperty("CMAC_status")
     private String status;
     @JsonProperty("CMAC_message_type")
@@ -27,9 +30,11 @@ public class CMACMessage {
     @JsonProperty("CMAC_cap_alert_uri")
     private String alertUri;
     @JsonProperty("CMAC_cap_sent_date_time")
-    private String capSentDateTime;
+    private OffsetDateTime capSentDateTime;
+    @JsonIgnore
+    private OffsetDateTime expires;
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="id")
+    @JoinColumn(name="messageNumber")
     @JsonProperty("CMAC_alert_info")
     private CMACAlertInfo alertInfo;
 
@@ -38,14 +43,41 @@ public class CMACMessage {
     public CMACMessage(CAPMessageModel capMessageModel) {
         capIdentifier = capMessageModel.getIdentifier();
         sender = capMessageModel.getSender().toLowerCase();
-        sentDateTime = capMessageModel.getSent();
+        sentDateTime = OffsetDateTime.parse(capMessageModel.getSent()).atZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime();
         status = capMessageModel.getStatus();
         messageType = capMessageModel.getMsgType();
+        capSentDateTime = sentDateTime;
+        expires = OffsetDateTime.parse(capMessageModel.getInfo().getExpires()).atZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime();
         alertInfo = new CMACAlertInfo(capMessageModel.getInfo());
     }
 
     @JsonProperty("Cmac_message_number")
-    public String getMessageNumber() {
+    public String getMessageNumberHex() {
         return String.format("%08X", messageNumber);
+    }
+
+    @JsonIgnore
+    public Integer getMessageNumber() {
+        return messageNumber;
+    }
+
+    public void setMessageNumber(int messageNumber) {
+        this.messageNumber = messageNumber;
+    }
+
+    public OffsetDateTime getSentDateTime() {
+        return sentDateTime;
+    }
+
+    public void setSentDateTime(String sentDateTime) {
+        this.sentDateTime = OffsetDateTime.parse(sentDateTime).atZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime();
+    }
+
+    public OffsetDateTime getCapSentDateTime() {
+        return capSentDateTime;
+    }
+
+    public void setCapSentDateTime(String capSentDateTime) {
+        this.capSentDateTime = OffsetDateTime.parse(capSentDateTime).atZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime();;
     }
 }

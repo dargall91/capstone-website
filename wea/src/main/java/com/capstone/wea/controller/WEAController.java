@@ -2,10 +2,13 @@ package com.capstone.wea.controller;
 
 import com.capstone.wea.Util.IPAWSInterface;
 import com.capstone.wea.Util.Util;
+import com.capstone.wea.entities.CMACMessage;
+import com.capstone.wea.model.cap.IPAWSMessageList;
 import com.capstone.wea.model.cmac.*;
 import com.capstone.wea.model.sqlresult.*;
 import com.capstone.wea.model.sqlresult.mappers.*;
 
+import com.capstone.wea.repositories.MessageRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -22,10 +25,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.MalformedURLException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.*;
 
 @RequestMapping("/wea/api/")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -34,6 +39,8 @@ public class WEAController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
     private SimpleJdbcCall simpleJdbcCall;
+    @Autowired
+    private MessageRepository messageRepository;
 
     /**
      * Endpoint to request a WEA message from the server.
@@ -44,38 +51,51 @@ public class WEAController {
      * @return HTTP 200 OK and an XML formatted WEA message
      */
     @GetMapping(value = "getMessage", produces = "application/xml")
-    public ResponseEntity<CMACMessageModel> getMessage() {
+    public ResponseEntity<?> getMessage() throws MalformedURLException {
         if (simpleJdbcCall == null) {
             simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
         }
 
         //first check for oldest non-expired messages in database
-        Map<String, Object> oldestEntry;
-        CMACMessageModel oldestMessage;
+        OffsetDateTime now = ZonedDateTime.now(ZoneOffset.UTC).toOffsetDateTime();
+        CMACMessage oldestMessage = messageRepository.findFirstByExpiresBefore(now);
+
+        if (oldestMessage != null) {
+            return ResponseEntity.ok(oldestMessage);
+        }
 
         try {
-            oldestEntry = simpleJdbcCall.withProcedureName("GetOldestMessage").execute();
-
             //no non-expired messages in database, check for messages from IPAWS
-            if (oldestEntry.get("messageNumber") == null) {
-                oldestMessage = IPAWSInterface.getMessageFromIpaws("prod", jdbcTemplate, "public");
+            IPAWSMessageList ipawsResult = IPAWSInterface.getMessageFromIpaws("prod", jdbcTemplate, "public");
 
-                //if there are no new messages from IPAWS, throw error, otherwise return oldest message
-                if (oldestMessage == null) {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No new messages found");
-                } else {
+            //if there are no new messages from IPAWS, throw error, otherwise return oldest message
+            if (ipawsResult.getAlertList().size() == 0) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No new messages found");
+            } else {
+                for (int i = 0; i < ipawsResult.getAlertList().size(); i++) {
+                    CMACMessage exists =
+                            messageRepository.findByCapIdentifier(ipawsResult.getAlertList().get(i).getIdentifier());
+                    //if message with cap identifier exists, skip it
+                    if (exists != null) {
+                        continue;
+                    }
+
+                    CMACMessage message = new CMACMessage(ipawsResult.getAlertList().get(i));
+                    messageRepository.save(message);
+
+                    if (i == 0) {
+                        oldestMessage = message;
+                    }
+                }
+                if (oldestMessage != null) {
                     return ResponseEntity.ok(oldestMessage);
+                } else {
+                    return ResponseEntity.notFound().build();
                 }
             }
         } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+            return ResponseEntity.notFound().build();
         }
-
-        CMACMessageModel resultMessage =
-                new CMACMessageModel(Integer.parseInt(oldestEntry.get("messageNumber").toString()),
-                oldestEntry.get("capIdentifier").toString(), jdbcTemplate);
-
-        return ResponseEntity.ok(resultMessage);
     }
 
     /**
@@ -91,10 +111,10 @@ public class WEAController {
      */
     @PutMapping(value = "upload")
     public ResponseEntity<String> upload(@RequestBody CollectedDeviceData userData) {
-        String uploadId = userData.addToDatabase(jdbcTemplate.getDataSource());
+//        String uploadId = userData.addToDatabase(jdbcTemplate.getDataSource());
 
         URI location = ServletUriComponentsBuilder
-                .fromHttpUrl("http://localhost:8080/wea/api/getUpload?identifier=" + uploadId)
+                .fromHttpUrl("http://localhost:8080/wea/api/getUpload?identifier=" + 99)
                 .buildAndExpand()
                 .toUri();
 

@@ -2,6 +2,7 @@ package com.capstone.wea.entities;
 
 import com.capstone.wea.model.cap.CAPAreaModel;
 import com.capstone.wea.model.cap.CAPGeocodeModel;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,13 +19,17 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class CMACAlertArea {
     @Id
+    @JsonIgnore
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private long alertAreaId;
     @JsonProperty("CMAC_area_description")
+    @Column(length = Integer.MAX_VALUE)
     private String areaDescription;
     @JsonProperty("CMAC_polygon")
+    @Column(length = Integer.MAX_VALUE)
     private String polygon;
     @JsonProperty("CMAC_circle")
+    @Column(length = Integer.MAX_VALUE)
     private String circle;
     @ElementCollection
     @CollectionTable(name = "CMACCmasGeocode")
@@ -32,7 +37,7 @@ public class CMACAlertArea {
     @JacksonXmlElementWrapper(useWrapping = false)
     private List<String> geocodeList = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name="id")
+    @JoinColumn(name="alertAreaId")
     @JsonProperty("CMAC_cap_geocode")
     @JacksonXmlElementWrapper(useWrapping = false)
     private List<CMACCapGeocode> capGeocodeList = new ArrayList<>();
@@ -51,5 +56,13 @@ public class CMACAlertArea {
                 geocodeList.add(capGeocodeModel.getValue());
             }
         }
+    }
+
+    public long getAlertAreaId() {
+        return alertAreaId;
+    }
+
+    public void setAlertAreaId(long alertAreaId) {
+        this.alertAreaId = alertAreaId;
     }
 }
