@@ -72,7 +72,7 @@ public class CMACAlertInfo {
     }
 
     public OffsetDateTime getExpires() {
-        return expires;
+        return expires.withOffsetSameInstant(ZoneOffset.UTC);
     }
 
     public void setExpires(String expires) {

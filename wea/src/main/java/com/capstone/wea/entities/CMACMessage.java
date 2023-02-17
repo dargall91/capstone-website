@@ -66,7 +66,7 @@ public class CMACMessage {
     }
 
     public OffsetDateTime getSentDateTime() {
-        return sentDateTime;
+        return sentDateTime.withOffsetSameInstant(ZoneOffset.UTC);
     }
 
     public void setSentDateTime(String sentDateTime) {
@@ -74,7 +74,7 @@ public class CMACMessage {
     }
 
     public OffsetDateTime getCapSentDateTime() {
-        return capSentDateTime;
+        return capSentDateTime.withOffsetSameInstant(ZoneOffset.UTC);
     }
 
     public void setCapSentDateTime(String capSentDateTime) {
