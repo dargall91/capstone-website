@@ -65,6 +65,22 @@ public class CMACMessage {
         this.messageNumber = messageNumber;
     }
 
+    public String getCapIdentifier() {
+        return capIdentifier;
+    }
+
+    public void setCapIdentifier(String capIdentifier) {
+        this.capIdentifier = capIdentifier;
+    }
+
+    public String getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(String messageType) {
+        this.messageType = messageType;
+    }
+
     public OffsetDateTime getSentDateTime() {
         return sentDateTime.withOffsetSameInstant(ZoneOffset.UTC);
     }
@@ -79,5 +95,13 @@ public class CMACMessage {
 
     public void setCapSentDateTime(String capSentDateTime) {
         this.capSentDateTime = OffsetDateTime.parse(capSentDateTime).atZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime();;
+    }
+
+    public CMACAlertInfo getAlertInfo() {
+        return alertInfo;
+    }
+
+    public void setAlertInfo(CMACAlertInfo alertInfo) {
+        this.alertInfo = alertInfo;
     }
 }

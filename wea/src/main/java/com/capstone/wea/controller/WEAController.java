@@ -1,26 +1,19 @@
 package com.capstone.wea.controller;
 
 import com.capstone.wea.Util.IPAWSInterface;
-import com.capstone.wea.Util.Util;
 import com.capstone.wea.entities.CMACMessage;
+import com.capstone.wea.model.MessageStats;
 import com.capstone.wea.model.cap.IPAWSMessageList;
 import com.capstone.wea.model.cmac.*;
-import com.capstone.wea.model.sqlresult.*;
 import com.capstone.wea.model.sqlresult.mappers.*;
 
 import com.capstone.wea.repositories.MessageRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.BooleanNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
-import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -156,7 +149,7 @@ public class WEAController {
      *         objects containing each message's stats
      */
     @GetMapping("{sender}/messages/{page}/filter")
-    public ResponseEntity<ObjectNode> getMessageList(@PathVariable String sender, @PathVariable int page,
+    public ResponseEntity<?> getMessageList(@PathVariable String sender, @PathVariable int page,
                                                      @RequestParam(required = false) String messageNumber,
                                                      @RequestParam(required = false) String messageType,
                                                      @RequestParam(required = false) String fromDate,
@@ -167,9 +160,22 @@ public class WEAController {
             simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
         }
 
+
+
         //page cannot be zero or negative
         page = page < 1 ? 1 : page;
 
+        Pageable pageable = PageRequest.of(page - 1, 9, Sort.by("messageNumber").ascending());
+//        Sort sort = new Sort(new Sort.Direction(Sort.Direction.ASC), "");
+        Page<CMACMessage> messageList = messageRepository.findAllBySender(sender, pageable);
+        List<MessageStats> messageStatsList = new ArrayList<>();
+
+        for (CMACMessage message : messageList.getContent()) {
+            messageStatsList.add(new MessageStats(message));
+        }
+        Page<CMACMessage> messageStats = new PageImpl<>(messageList.getContent(), pageable, messageList.getTotalElements());
+        return ResponseEntity.ok(messageStatsList);
+        /*
         //default sort order is date -- used if not provided, or not valid
         boolean orderByDate = Util.isNullOrBlank(sortBy) || !sortBy.equalsIgnoreCase("number");
 
@@ -269,6 +275,6 @@ public class WEAController {
         root.set("prev", BooleanNode.valueOf(page > 1));
         root.set("next", BooleanNode.valueOf(resultList.size() > 9));
 
-        return ResponseEntity.ok(root);
+        return ResponseEntity.ok(root);*/
     }
 }

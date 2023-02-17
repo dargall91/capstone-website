@@ -78,4 +78,12 @@ public class CMACAlertInfo {
     public void setExpires(String expires) {
         this.expires = OffsetDateTime.parse(expires);
     }
+
+    public List<CMACAlertArea> getAlertAreaList() {
+        return alertAreaList;
+    }
+
+    public void setAlertAreaList(List<CMACAlertArea> alertAreaList) {
+        this.alertAreaList = alertAreaList;
+    }
 }
