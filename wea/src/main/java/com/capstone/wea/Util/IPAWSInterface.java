@@ -1,20 +1,13 @@
 package com.capstone.wea.Util;
 
-import com.capstone.wea.entities.CMACMessage;
 import com.capstone.wea.model.cap.IPAWSMessageList;
-import com.capstone.wea.model.cmac.CMACMessageModel;
 import com.capstone.wea.parser.XMLParser;
-import com.capstone.wea.repositories.MessageRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Clock;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A class for interfacing with IPAWS

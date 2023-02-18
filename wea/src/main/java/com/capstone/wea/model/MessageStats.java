@@ -1,7 +1,6 @@
 package com.capstone.wea.model;
 
 import com.capstone.wea.Util.Util;
-import com.capstone.wea.model.sqlresult.Coordinate;
 import com.capstone.wea.repositories.projections.MessageDataProjection;
 import com.capstone.wea.repositories.projections.CollectedStatsProjections;
 import com.fasterxml.jackson.annotation.JsonIgnore;
