@@ -4,13 +4,16 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { AppProvider } from "./context";
+import { PolygonProvider } from "./PolygonContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <AppProvider>
-      <App />
-    </AppProvider>
+    <PolygonProvider>
+      <AppProvider>
+        <App />
+      </AppProvider>
+    </PolygonProvider>
   </React.StrictMode>
 );
 

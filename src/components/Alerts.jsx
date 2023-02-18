@@ -1,7 +1,9 @@
 import { useGlobalContext } from "../context";
+import { usePolygonContext } from "../PolygonContext";
 
 const Alerts = () => {
-  const { selectAlert, dbAlertList, page, buildURL } = useGlobalContext();
+  const { selectAlert, dbAlertList, page } = useGlobalContext();
+  const { buildURL } = usePolygonContext();
 
   if (dbAlertList.length < 1 && page !== 1) {
     return (
