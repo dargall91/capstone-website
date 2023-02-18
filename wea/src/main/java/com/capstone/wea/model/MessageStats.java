@@ -16,7 +16,8 @@ public class MessageStats {
     private String sentDateTime;
     private String expiresDateTime;
     private List<Coordinate> coordinates;
-    private List<String> geocodes;
+    private List<String> geocodes = new ArrayList<>();
+    private List<String> areaNames = new ArrayList<>();
     private int deviceCount;
     private String averageTime;
     private String shortestTime;
@@ -136,6 +137,14 @@ public class MessageStats {
 
     public void setGeocodes(List<String> geocodes) {
         this.geocodes = geocodes;
+    }
+
+    public List<String> getAreaNames() {
+        return areaNames;
+    }
+
+    public void setAreaNames(List<String> areaNames) {
+        this.areaNames = areaNames;
     }
 
     public int getDeviceCount() {

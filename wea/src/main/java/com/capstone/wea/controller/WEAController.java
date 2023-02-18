@@ -3,9 +3,11 @@ package com.capstone.wea.controller;
 import com.capstone.wea.Util.IPAWSInterface;
 import com.capstone.wea.Util.Util;
 import com.capstone.wea.entities.CMACMessage;
+import com.capstone.wea.entities.Geocode;
 import com.capstone.wea.model.MessageStats;
 import com.capstone.wea.model.cap.IPAWSMessageList;
 
+import com.capstone.wea.repositories.GeocodeRepository;
 import com.capstone.wea.repositories.projections.MessageDataProjection;
 import com.capstone.wea.repositories.projections.CollectedStatsProjections;
 import com.capstone.wea.repositories.DeviceRepository;
@@ -17,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.web.bind.annotation.*;
@@ -40,6 +41,8 @@ public class WEAController {
     private MessageRepository messageRepository;
     @Autowired
     private DeviceRepository deviceRepository;
+    @Autowired
+    private GeocodeRepository geocodeRepository;
 
     /**
      * Endpoint to request a WEA message from the server. First, it checks if there are any non-expired messages in
@@ -192,6 +195,27 @@ public class WEAController {
             } else {
                 messageStatsList.add(new MessageStats(null, messageData.get(i)));
             }
+
+            List<Geocode> geocodeList = new ArrayList<>();
+            if (messageStatsList.get(i).getCoordinates() == null && !messageStatsList.get(i).getGeocodes().isEmpty()) {
+                String code = messageStatsList.get(i).getGeocodes().get(0).substring(0, 3) + "000";
+                //confirm fips exists in db
+                Optional<Geocode> stateGeocode =
+                        geocodeRepository.findById(messageStatsList.get(i).getGeocodes().get(0).substring(0, 3) +
+                                "000");
+
+                if (stateGeocode.isEmpty()) {
+                    continue;
+                }
+
+                for (int k = 0; k < messageStatsList.get(i).getGeocodes().size(); k++) {
+                    Optional<Geocode> geocode =
+                            geocodeRepository.findById(messageStatsList.get(i).getGeocodes().get(k));
+
+                    geocode.ifPresent(geocodeList::add);
+                    messageStatsList.get(i).getAreaNames().add(geocode.get().getName() + " " + stateGeocode.get().getName());
+                }
+            }
         }
 
         //TODO: deviceCount should be 90-95% of number that should have been hit
@@ -203,5 +227,16 @@ public class WEAController {
         root.set("next", BooleanNode.valueOf(messageData.size() > 9));
 
         return ResponseEntity.ok(root);
+    }
+
+    @GetMapping("messages/{messageNumber}")
+    public ResponseEntity<?> message(@PathVariable int messageNumber) {
+        Optional<CMACMessage> message = messageRepository.findById(messageNumber);
+
+        if (message.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(message.get());
     }
 }
