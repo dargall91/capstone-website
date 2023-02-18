@@ -1,13 +1,18 @@
 package com.capstone.wea.controller;
 
 import com.capstone.wea.Util.IPAWSInterface;
+import com.capstone.wea.Util.Util;
 import com.capstone.wea.entities.CMACMessage;
 import com.capstone.wea.model.MessageStats;
 import com.capstone.wea.model.cap.IPAWSMessageList;
-import com.capstone.wea.model.cmac.*;
-import com.capstone.wea.model.sqlresult.mappers.*;
 
+import com.capstone.wea.repositories.projections.AreaProjection;
+import com.capstone.wea.repositories.projections.CollectedStatsProjections;
+import com.capstone.wea.repositories.DeviceRepository;
 import com.capstone.wea.repositories.MessageRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
@@ -22,7 +27,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.*;
 
 @RequestMapping("/wea/api/")
@@ -34,6 +38,8 @@ public class WEAController {
     private SimpleJdbcCall simpleJdbcCall;
     @Autowired
     private MessageRepository messageRepository;
+    @Autowired
+    private DeviceRepository deviceRepository;
 
     /**
      * Endpoint to request a WEA message from the server.
@@ -45,12 +51,8 @@ public class WEAController {
      */
     @GetMapping(value = "getMessage", produces = "application/xml")
     public ResponseEntity<?> getMessage() throws MalformedURLException {
-        if (simpleJdbcCall == null) {
-            simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
-        }
-
         //first check for oldest non-expired messages in database
-        OffsetDateTime now = ZonedDateTime.now(ZoneOffset.UTC).toOffsetDateTime();
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC).withNano(0);
         CMACMessage oldestMessage = messageRepository.findFirstByExpiresAfter(now);
 
         if (oldestMessage != null) {
@@ -59,7 +61,7 @@ public class WEAController {
 
         try {
             //no non-expired messages in database, check for messages from IPAWS
-            IPAWSMessageList ipawsResult = IPAWSInterface.getMessageFromIpaws("prod", jdbcTemplate, "public");
+            IPAWSMessageList ipawsResult = IPAWSInterface.getMessageFromIpaws("prod", "public");
 
             //if there are no new messages from IPAWS, throw error, otherwise return oldest message
             if (ipawsResult.getAlertList().size() == 0) {
@@ -102,12 +104,14 @@ public class WEAController {
      * @return HTTP 201 CREATED and the URI of the
      *         uploaded data
      */
-    @PutMapping(value = "upload")
-    public ResponseEntity<String> upload(@RequestBody CollectedDeviceData userData) {
+//    @PutMapping(value = "upload")
+    @PostMapping(value = "upload")
+    public ResponseEntity<String> upload(@RequestBody com.capstone.wea.entities.CollectedDeviceData userData) {
+        userData = deviceRepository.save(userData);
 //        String uploadId = userData.addToDatabase(jdbcTemplate.getDataSource());
 
         URI location = ServletUriComponentsBuilder
-                .fromHttpUrl("http://localhost:8080/wea/api/getUpload?identifier=" + 99)
+                .fromHttpUrl("http://localhost:8080/wea/api/getUpload?identifier=" + userData.getId())
                 .buildAndExpand()
                 .toUri();
 
@@ -126,14 +130,18 @@ public class WEAController {
      *         FOUND if the identifier is invalid
      */
     @GetMapping(value = "getUpload", produces = "application/xml")
-    public ResponseEntity<CollectedDeviceData> getUpload(@RequestParam int identifier) {
+    public ResponseEntity<?> getUpload(@RequestParam int identifier) {
         String query = "SELECT * " +
                 "FROM alert_db.device_upload_data " +
                 "WHERE device_upload_data.UploadID = '" + identifier + "';";
 
-        CollectedDeviceData data = jdbcTemplate.queryForObject(query, new CollectedDeviceDataMapper());
+        Optional<com.capstone.wea.entities.CollectedDeviceData> data = deviceRepository.findById((long) identifier);
 
-        return ResponseEntity.ok(data);
+        if (data.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(data.get());
     }
 
     /**
@@ -150,38 +158,78 @@ public class WEAController {
      */
     @GetMapping("{sender}/messages/{page}/filter")
     public ResponseEntity<?> getMessageList(@PathVariable String sender, @PathVariable int page,
-                                                     @RequestParam(required = false) String messageNumber,
-                                                     @RequestParam(required = false) String messageType,
-                                                     @RequestParam(required = false) String fromDate,
-                                                     @RequestParam(required = false) String toDate,
-                                                     @RequestParam(required = false) String sortBy,
-                                                     @RequestParam(required = false) String sortOrder) {
-        if (simpleJdbcCall == null) {
-            simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
+                                            @RequestParam(required = false) String messageNumber,
+                                            @RequestParam(required = false) String messageType,
+                                            @RequestParam(required = false) String fromDate,
+                                            @RequestParam(required = false) String toDate,
+                                            @RequestParam(required = false) String sortBy,
+                                            @RequestParam(required = false) String sortOrder) {
+        String commonName;
+        if (sender.equals("w-nws.webmaster@noaa.gov")) {
+            commonName = "National Weather Service";
+        } else {
+            CMACMessage message = messageRepository.findFirstBySender(sender);
+            commonName = message.getAlertInfo().getSenderName();
         }
-
-
 
         //page cannot be zero or negative
         page = page < 1 ? 1 : page;
 
-        Pageable pageable = PageRequest.of(page - 1, 9, Sort.by("messageNumber").ascending());
-//        Sort sort = new Sort(new Sort.Direction(Sort.Direction.ASC), "");
-        Page<CMACMessage> messageList = messageRepository.findAllBySender(sender, pageable);
-        List<MessageStats> messageStatsList = new ArrayList<>();
-
-        for (CMACMessage message : messageList.getContent()) {
-            messageStatsList.add(new MessageStats(message));
-        }
-        Page<CMACMessage> messageStats = new PageImpl<>(messageList.getContent(), pageable, messageList.getTotalElements());
-        return ResponseEntity.ok(messageStatsList);
-        /*
         //default sort order is date -- used if not provided, or not valid
         boolean orderByDate = Util.isNullOrBlank(sortBy) || !sortBy.equalsIgnoreCase("number");
 
         //default sort order is descending -- used if not provided, or not valid
         boolean orderByDesc = Util.isNullOrBlank(sortOrder) || !sortOrder.equalsIgnoreCase("asc");
+        Sort sort;
 
+        sort = orderByDate ? Sort.by("sentDateTime") : Sort.by("messageNumber");
+        sort = orderByDesc ? sort.descending() : sort.ascending();
+
+        Pageable pageable = PageRequest.of(page - 1, 9, sort);
+
+        Page<CMACMessage> messageList = messageRepository.findAllBySender(sender, pageable);
+        List<MessageStats> messageStatsList = new ArrayList<>();
+
+        List<CollectedStatsProjections> statsList = deviceRepository.getDeviceStats(sender, page,
+                Util.isNullOrBlank(messageNumber) ? null : Integer.parseInt(messageNumber, 16), messageType,
+                fromDate, toDate, orderByDate, orderByDesc);
+
+        List<AreaProjection> areaList = messageRepository.getMessageAreas(sender, page,
+                Util.isNullOrBlank(messageNumber) ? null : Integer.parseInt(messageNumber, 16), messageType,
+                fromDate, toDate, orderByDate, orderByDesc);
+
+        for (int i = 0; i < areaList.size(); i++) {
+            messageStatsList.add(new MessageStats(statsList.get(i), areaList.get(i)));
+        }
+
+        //TODO: deviceCount should be 90-95% of number that should have been hit
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode root = mapper.createObjectNode();
+        root.set("messageStats", mapper.valueToTree(messageStatsList));///.subList(0, Math.min(resultList.size(), 9))));
+        root.set("commonName", mapper.valueToTree(commonName));
+        root.set("prev", BooleanNode.valueOf(page > 1));
+        root.set("next", BooleanNode.valueOf(statsList.size() > 9));
+
+        return ResponseEntity.ok(root);
+
+//
+//
+//        for (CMACMessage message : messageList.getContent()) {
+//            MessageStats messageStats = new MessageStats(message);
+//
+//            CollectedStatsProjections collectedDeviceStats =
+//                    deviceRepository.findAverageTimeReceivedByMessageNumber(message.getMessageNumber());
+//
+//
+//
+//            messageStats.setDeviceStats(collectedDeviceStats);
+//
+//            messageStatsList.add(messageStats);
+//        }
+//
+//        Page<MessageStats> messageStats = new PageImpl<>(messageStatsList, pageable, messageList.getTotalElements());
+//        return ResponseEntity.ok(test);
+        /*
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("sender", sender)
                 .addValue("pageNum", page)

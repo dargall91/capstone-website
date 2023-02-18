@@ -35,12 +35,11 @@ public class IPAWSInterface {
      *
      * @param env The IPAWS environment API to hit; valid values are "test" and "prod";
      *            If an invalid value is passed, the test environment will be used
-     * @param jdbcTemplate the JdbcTemplate that has a connection to the database
      * @param feed The feed API to hit; the valid values are: "eas", "non-eas", "public", and "wea";
      *             If an invalid feed is provided, "wea" will be used
      * @return The oldest CMACMessage found, or null if none were found
      */
-    public static IPAWSMessageList getMessageFromIpaws(String env, JdbcTemplate jdbcTemplate, String feed) throws MalformedURLException {
+    public static IPAWSMessageList getMessageFromIpaws(String env, String feed) throws MalformedURLException {
         StringBuilder ipawsUrl = new StringBuilder();
         if (env.equalsIgnoreCase("prod")) {
             ipawsUrl.append(IPAWS_PROD_URL);
@@ -64,30 +63,6 @@ public class IPAWSInterface {
 
         URL getIpaws = new URL(ipawsUrl.toString());
 
-        IPAWSMessageList ipawsMessageList = XMLParser.parseIpawsUrlResult(getIpaws);
-        List<CMACMessage> cmacMessageList = new ArrayList<>();// = ipawsMessageList.toCmac();
-
-        //track index of first inserted message, this is the oldest message in the list
-        int oldestMessage = 0;
-        try {
-            for (int i = 0; i < ipawsMessageList.getAlertList().size(); i++) {
-                CMACMessage message = new CMACMessage(ipawsMessageList.getAlertList().get(i));
-                //message = messageRepository.save(message);
-//                if (i == 0) {
-//                    oldestMessage = message.getMessageNumberInt();
-//                }
-
-//                if (cmacMessageList.get(i).addToDatabase(jdbcTemplate)) {
-//                    if (oldestMessage == -1) {
-//                        oldestMessage = i;
-//                    }
-//                }
-            }
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-        }
-
-//        return oldestMessage != -1 ? cmacMessageList.get(oldestMessage) : null;
-        return ipawsMessageList;
+        return XMLParser.parseIpawsUrlResult(getIpaws);
     }
 }

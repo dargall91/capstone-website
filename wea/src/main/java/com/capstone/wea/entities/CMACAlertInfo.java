@@ -86,4 +86,8 @@ public class CMACAlertInfo {
     public void setAlertAreaList(List<CMACAlertArea> alertAreaList) {
         this.alertAreaList = alertAreaList;
     }
+
+    public String getSenderName() {
+        return senderName;
+    }
 }
