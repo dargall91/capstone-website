@@ -1,7 +1,7 @@
 package com.capstone.wea.repositories;
 
 import com.capstone.wea.entities.CMACMessage;
-import com.capstone.wea.repositories.projections.AreaProjection;
+import com.capstone.wea.repositories.projections.MessageDataProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,9 +16,9 @@ public interface MessageRepository extends JpaRepository<CMACMessage, Integer> {
     CMACMessage findByCapIdentifier(String capIdentifier);
     Page<CMACMessage> findAllBySender(String sender, Pageable page);
     CMACMessage findFirstBySender(String sender);
-    @Query(nativeQuery = true, value = "call GetMessageCoordinates(:sender, :pageNum, :messageNumber, :messageType, " +
+    @Query(nativeQuery = true, value = "call GetMessageData(:sender, :pageNum, :messageNumber, :messageType, " +
             ":fromDate, :toDate, :orderByDate, :orderByDesc)")
-    List<AreaProjection> getMessageAreas(String sender, int pageNum, Integer messageNumber,
-                                         String messageType, String fromDate, String toDate,
-                                         boolean orderByDate, boolean orderByDesc);
+    List<MessageDataProjection> getMessageData(String sender, int pageNum, Integer messageNumber,
+                                               String messageType, String fromDate, String toDate,
+                                               boolean orderByDate, boolean orderByDesc);
 }

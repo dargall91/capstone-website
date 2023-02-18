@@ -2,11 +2,10 @@ package com.capstone.wea.model;
 
 import com.capstone.wea.Util.Util;
 import com.capstone.wea.model.sqlresult.Coordinate;
-import com.capstone.wea.repositories.projections.AreaProjection;
+import com.capstone.wea.repositories.projections.MessageDataProjection;
 import com.capstone.wea.repositories.projections.CollectedStatsProjections;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,26 +15,46 @@ public class MessageStats {
     private String messageType;
     private String sentDateTime;
     private String expiresDateTime;
-    private int deviceCount;
-    private String averageTime;
-    private String firstReceived;
-    private String firstDisplayed;
     private List<Coordinate> coordinates;
     private List<String> geocodes;
+    private int deviceCount;
+    private String averageTime;
+    private String shortestTime;
+    private String firstReceived;
+    private String averageDisplayDelay;
+    private String firstDisplayed;
+    private int receivedOutside;
+    private int displayedOutside;
 
-    public MessageStats(CollectedStatsProjections messageStats, AreaProjection area) {
-        messageNumber = messageStats.getMessageNumber();
-        capIdentifier = messageStats.getCapIdentifier();
-        messageType = messageStats.getMessageType();
-        sentDateTime = messageStats.getSentDateTime();
-        expiresDateTime = messageStats.getExpiresDateTime();
-        averageTime = messageStats.getAverageTime();
-        deviceCount = messageStats.getDeviceCount();
-        firstReceived = messageStats.getFirstReceived();
-        firstDisplayed = messageStats.getFirstDisplayed();
+    public MessageStats(CollectedStatsProjections deviceStats, MessageDataProjection messageData) {
+        setDeviceStats(deviceStats);
+        setMessageData(messageData);
+    }
 
-        String polygonString = area.getPolygon();
-        String circleString = area.getCircle();
+    private void setDeviceStats(CollectedStatsProjections deviceStats) {
+        if (deviceStats == null) {
+            return;
+        }
+
+        deviceCount = deviceStats.getDeviceCount();
+        averageTime = deviceStats.getAverageTime();
+        shortestTime = deviceStats.getShortestTime();
+        firstReceived = deviceStats.getFirstReceived();
+        averageDisplayDelay = deviceStats.getAverageDisplayDelay();
+        firstDisplayed = deviceStats.getFirstDisplayed();
+        receivedOutside = deviceStats.getReceivedOutside();
+        displayedOutside = deviceStats.getDisplayedOutside();
+    }
+
+    private void setMessageData(MessageDataProjection messageData) {
+        messageNumber = messageData.getMessageNumber();
+        capIdentifier = messageData.getCapIdentifier();
+        messageType = messageData.getMessageType();
+        sentDateTime = messageData.getSentDateTime();
+        expiresDateTime = messageData.getExpiresDateTime();
+
+        String polygonString = messageData.getPolygon();
+        String circleString = messageData.getCircle();
 
         if (!Util.isNullOrBlank(polygonString)) {
             coordinates = new ArrayList<>();
@@ -53,9 +72,9 @@ public class MessageStats {
                 List<String> latLong = List.of(coordinatePair.split(","));
                 coordinates.add(new Coordinate(latLong.get(0), latLong.get(1)));
             }
-        } else {
-            //geocodes = List.of(area.getGeocodeList().split(","));
         }
+
+        geocodes = List.of(messageData.getGeocodes().split(","));
     }
 
     public String getMessageNumber() {
@@ -103,6 +122,22 @@ public class MessageStats {
         this.expiresDateTime = expiresDateTime;
     }
 
+    public List<Coordinate> getCoordinates() {
+        return coordinates;
+    }
+
+    public void setCoordinates(List<Coordinate> coordinates) {
+        this.coordinates = coordinates;
+    }
+
+    public List<String> getGeocodes() {
+        return geocodes;
+    }
+
+    public void setGeocodes(List<String> geocodes) {
+        this.geocodes = geocodes;
+    }
+
     public int getDeviceCount() {
         return deviceCount;
     }
@@ -119,12 +154,28 @@ public class MessageStats {
         this.averageTime = averageTime;
     }
 
+    public String getShortestTime() {
+        return shortestTime;
+    }
+
+    public void setShortestTime(String shortestTime) {
+        this.shortestTime = shortestTime;
+    }
+
     public String getFirstReceived() {
         return firstReceived;
     }
 
     public void setFirstReceived(String firstReceived) {
         this.firstReceived = firstReceived;
+    }
+
+    public String getAverageDisplayDelay() {
+        return averageDisplayDelay;
+    }
+
+    public void setAverageDisplayDelay(String averageDisplayDelay) {
+        this.averageDisplayDelay = averageDisplayDelay;
     }
 
     public String getFirstDisplayed() {
@@ -135,19 +186,19 @@ public class MessageStats {
         this.firstDisplayed = firstDisplayed;
     }
 
-    public List<Coordinate> getCoordinates() {
-        return coordinates;
+    public int getReceivedOutside() {
+        return receivedOutside;
     }
 
-    public void setCoordinates(List<Coordinate> coordinates) {
-        this.coordinates = coordinates;
+    public void setReceivedOutside(int receivedOutside) {
+        this.receivedOutside = receivedOutside;
     }
 
-    public List<String> getGeocodes() {
-        return geocodes;
+    public int getDisplayedOutside() {
+        return displayedOutside;
     }
 
-    public void setGeocodes(List<String> geocodes) {
-        this.geocodes = geocodes;
+    public void setDisplayedOutside(int displayedOutside) {
+        this.displayedOutside = displayedOutside;
     }
 }
