@@ -13,7 +13,7 @@ const PolygonProvider = ({ children }) => {
   const getCenter = (coords) => {
     let minX, maxX, minY, maxY;
 
-    coords.map((idx) => {
+    coords.forEach((idx) => {
       minX = Number(idx.lat) < minX || minX == null ? Number(idx.lat) : minX;
       maxX = Number(idx.lat) > maxX || maxX == null ? Number(idx.lat) : maxX;
       minY = Number(idx.lon) < minY || minY == null ? Number(idx.lon) : minY;
@@ -74,7 +74,7 @@ const PolygonProvider = ({ children }) => {
     src += `path=weight:4|color:red|fillcolor:red|`;
 
     let pathIndex = 0;
-    coordinates.map((idx) => {
+    coordinates.forEach((idx) => {
       src += `${idx.lat},${idx.lon}`;
       if (pathIndex !== length - 1) {
         src += `|`;
@@ -105,7 +105,7 @@ const PolygonProvider = ({ children }) => {
     //   }
     // });
 
-    geocodes.map((idx) => {
+    geocodes.forEach((idx) => {
       src += `${idx}`;
       if (pathIndex !== length - 1) {
         src += `|`;
