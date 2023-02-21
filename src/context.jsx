@@ -3,21 +3,6 @@ import axios from "axios";
 
 // API KEY: AIzaSyB0Zq3fWV9fXL-_v3A5DGIZXXMnu89A60g
 
-// any static variables go here
-const monthHolder = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
 const baseUrl = "http://localhost:8080/wea/api/";
 
 const AppContext = React.createContext();
@@ -40,10 +25,11 @@ const AppProvider = ({ children }) => {
   // Functions
   const getDate = () => {
     let today = new Date();
-    let day = String(today.getDate());
-    let month = monthHolder[today.getMonth()];
-    let year = today.getFullYear();
-    setDate(`${month} ${day}, ${year}`);
+    const formatted = new Intl.DateTimeFormat("en-us", {
+      dateStyle: "long",
+      timeStyle: "short",
+    });
+    setDate(formatted.format(today));
   };
 
   /**
