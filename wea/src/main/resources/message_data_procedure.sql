@@ -11,9 +11,11 @@ CREATE PROCEDURE IF NOT EXISTS GetMessageData(
 BEGIN
 	DECLARE offsetVal INT DEFAULT 9 * (IF(pageNum < 1, 1, pageNum) - 1);
 
-    SELECT Coordinates.messageNumber, sentDateTime, Coordinates.messageType, capIdentifier, polygon, circle, geocodes
+    SELECT Coordinates.messageNumber, sentDateTime, expires, Coordinates.messageType, capIdentifier, polygon, circle,
+    geocodes
     FROM (
-		SELECT CMACMessage.messageNumber, sentDateTime, CMACMessage.messageType, CMACMessage.capIdentifier, polygon, circle
+		SELECT CMACMessage.messageNumber, sentDateTime, expires, CMACMessage.messageType, CMACMessage.capIdentifier,
+		polygon, circle
 		FROM CMACMessage JOIN CMACAlertArea
 		ON CMACAlertArea.alertAreaId = CMACMessage.messageNumber
 		WHERE CMACMessage.sender = sender

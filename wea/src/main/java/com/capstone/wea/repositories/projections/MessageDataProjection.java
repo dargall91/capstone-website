@@ -5,7 +5,7 @@ public interface MessageDataProjection {
     String getCapIdentifier();
     String getMessageType();
     String getSentDateTime();
-    String getExpiresDateTime();
+    String getExpires();
     String getPolygon();
     String getCircle();
     String getGeocodes();
