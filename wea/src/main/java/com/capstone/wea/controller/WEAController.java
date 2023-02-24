@@ -52,10 +52,22 @@ public class WEAController {
      * @return HTTP 200 OK and an XML formatted WEA message
      */
     @GetMapping(value = "getMessage", produces = "application/xml")
-    public ResponseEntity<?> getMessage() {
+    public ResponseEntity<?> getMessage(@RequestParam(required = false) List<String> receivedMessages) {
         //first check for oldest non-expired messages in database
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC).withNano(0);
-        CMACMessage oldestMessage = messageRepository.findFirstByExpiresAfter(now);
+        CMACMessage oldestMessage;
+
+        if (receivedMessages == null || receivedMessages.isEmpty()) {
+            oldestMessage = messageRepository.findFirstByExpiresAfter(now);
+        } else {
+            List<Integer> receivedMessagesIntegers = new ArrayList<>();
+
+            for (String numberString : receivedMessages) {
+                receivedMessagesIntegers.add(Integer.parseInt(numberString, 16));
+            }
+
+            oldestMessage = messageRepository.findFirstByMessageNumberNotInAndExpiresAfter(receivedMessagesIntegers, now);
+        }
 
         if (oldestMessage != null) {
             return ResponseEntity.ok(oldestMessage);

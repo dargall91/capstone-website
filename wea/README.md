@@ -135,18 +135,12 @@ successful PUT, the HTTP response header will contain a Location that points to 
 
 #### Example Request Body:
 
-    <?xml version = "1.0" encoding = "UTF-8"?>
-    <CMAC_device_data>
-        <CMAC_user_time_received>2017-06-03T01:33:29</CMAC_user_time_received>
-        <CMAC_user_time_displayed>2017-06-03T01:33:36</CMAC_user_time_displayed>
-        <CMAC_user_location_received>48253</CMAC_user_location_received>
-        <CMAC_user_location_displayed>48253</CMAC_user_location_displayed>
-        <CMAC_message_number>00001059</CMAC_message_number>
-        <Received_Outside_Area>false</Received_Outside_Area>
-        <Displayed_Outside_Area>false</Displayed_Outside_Area>
-        <Received_After_Expired>false</Received_After_Expired>
-        <Displayed_After_Expired>false</Displayed_After_Expired>
-    </CMAC_device_data>
+    {
+        "messageNumber" : "0000000C",
+        "capIdentifier": "urn:oid:2.49.0.1.840.0.9bb69179ba44e3e26201b9f31e9bda2d1fa963e7.001.1",
+        "timeReceived": "2023-02-18T11:54:30Z",
+        "timeDisplayed": "2023-02-18T11:54:35Z"
+    }
 
 #### Example Response Location Header:
 
@@ -171,22 +165,21 @@ identifier.
 
 #### Example Request:
 
-    GET http://localhost:8080/wea/api/getUpload?identifier=12
+    GET http://localhost:8080/wea/api/getUpload?identifier=1
 
 #### Example Response Body:
 
-    <CMAC_device_data>
-        <CMAC_user_time_received>2017-06-03T01:33:29</CMAC_user_time_received>
-        <CMAC_user_time_displayed>2017-06-03T01:33:36</CMAC_user_time_displayed>
-        <CMAC_user_location_received>48253</CMAC_user_location_received>
-        <CMAC_user_location_displayed>48253</CMAC_user_location_displayed>
-        <CMAC_message_number>00001059</CMAC_message_number>
-        <Received_Outside_Area>false</Received_Outside_Area>
-        <Displayed_Outside_Area>false</Displayed_Outside_Area>
-        <Received_After_Expired>false</Received_After_Expired>
-        <Displayed_After_Expired>false</Displayed_After_Expired>
-        <id>12</id>
-    </CMAC_device_data>
+    {
+        "messageNumber": 1,
+        "capIdentifier": "urn:oid:2.49.0.1.840.0.9bb69179ba44e3e26201b9f31e9bda2d1fa963e7.001.1",
+        "timeReceived": "2023-02-18T06:54:30-05:00",
+        "timeDisplayed": "2023-02-18T06:54:35-05:00",
+        "receivedInside": false,
+        "displayedInside": false,
+        "messagePresented": false,
+        "locationAvailable": false,
+        "distanceFromPolygon": 0.0
+    }
 
 ### <a id="stats" /> Get Message Stats by AO
 
