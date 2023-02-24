@@ -52,10 +52,22 @@ public class WEAController {
      * @return HTTP 200 OK and an XML formatted WEA message
      */
     @GetMapping(value = "getMessage", produces = "application/xml")
-    public ResponseEntity<?> getMessage() {
+    public ResponseEntity<?> getMessage(@RequestParam(required = false) List<String> receivedMessages) {
         //first check for oldest non-expired messages in database
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC).withNano(0);
-        CMACMessage oldestMessage = messageRepository.findFirstByExpiresAfter(now);
+        CMACMessage oldestMessage;
+
+        if (receivedMessages == null || receivedMessages.isEmpty()) {
+            oldestMessage = messageRepository.findFirstByExpiresAfter(now);
+        } else {
+            List<Integer> receivedMessagesIntegers = new ArrayList<>();
+
+            for (String numberString : receivedMessages) {
+                receivedMessagesIntegers.add(Integer.parseInt(numberString, 16));
+            }
+
+            oldestMessage = messageRepository.findFirstByMessageNumberNotInAndExpiresAfter(receivedMessagesIntegers, now);
+        }
 
         if (oldestMessage != null) {
             return ResponseEntity.ok(oldestMessage);
@@ -155,12 +167,14 @@ public class WEAController {
                                             @RequestParam(required = false) String toDate,
                                             @RequestParam(required = false) String sortBy,
                                             @RequestParam(required = false) String sortOrder) {
+        //run stored procedure creation scripts
         ClassPathResource getDeviceStats = new ClassPathResource("device_stats_procedure.sql");
         ClassPathResource getMessageData = new ClassPathResource("message_data_procedure.sql");
         ResourceDatabasePopulator resourceDatabasePopulator = new ResourceDatabasePopulator(getDeviceStats, getMessageData);
         resourceDatabasePopulator.setSeparator(ScriptUtils.EOF_STATEMENT_SEPARATOR);
         resourceDatabasePopulator.execute(dataSource);
 
+        //find common name
         String commonName;
         if (sender.equals("w-nws.webmaster@noaa.gov")) {
             commonName = "National Weather Service";
@@ -197,24 +211,20 @@ public class WEAController {
             }
 
             List<Geocode> geocodeList = new ArrayList<>();
-            if (messageStatsList.get(i).getCoordinates() == null && !messageStatsList.get(i).getGeocodes().isEmpty()) {
-                String code = messageStatsList.get(i).getGeocodes().get(0).substring(0, 3) + "000";
+            for (int k = 0; k < messageStatsList.get(i).getGeocodes().size(); k++) {
+                String stateCode = messageStatsList.get(i).getGeocodes().get(k).substring(0, 3) + "000";
                 //confirm fips exists in db
-                Optional<Geocode> stateGeocode =
-                        geocodeRepository.findById(messageStatsList.get(i).getGeocodes().get(0).substring(0, 3) +
-                                "000");
+                Optional<Geocode> stateGeocode = geocodeRepository.findById(stateCode);
 
                 if (stateGeocode.isEmpty()) {
                     continue;
                 }
 
-                for (int k = 0; k < messageStatsList.get(i).getGeocodes().size(); k++) {
-                    Optional<Geocode> geocode =
-                            geocodeRepository.findById(messageStatsList.get(i).getGeocodes().get(k));
+                Optional<Geocode> geocode =
+                        geocodeRepository.findById(messageStatsList.get(i).getGeocodes().get(k));
 
-                    geocode.ifPresent(geocodeList::add);
-                    messageStatsList.get(i).getAreaNames().add(geocode.get().getName() + " " + stateGeocode.get().getName());
-                }
+                geocode.ifPresent(geocodeList::add);
+                messageStatsList.get(i).getAreaNames().add(geocode.get().getName() + " " + stateGeocode.get().getName());
             }
         }
 
@@ -229,6 +239,12 @@ public class WEAController {
         return ResponseEntity.ok(root);
     }
 
+    /**
+     * Debugging endpoint, gets a single message
+     *
+     * @param messageNumber
+     * @return
+     */
     @GetMapping("messages/{messageNumber}")
     public ResponseEntity<?> message(@PathVariable int messageNumber) {
         Optional<CMACMessage> message = messageRepository.findById(messageNumber);

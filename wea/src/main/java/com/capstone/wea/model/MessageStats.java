@@ -51,7 +51,7 @@ public class MessageStats {
         capIdentifier = messageData.getCapIdentifier();
         messageType = messageData.getMessageType();
         sentDateTime = messageData.getSentDateTime();
-        expiresDateTime = messageData.getExpiresDateTime();
+        expiresDateTime = messageData.getExpires();
 
         String polygonString = messageData.getPolygon();
         String circleString = messageData.getCircle();

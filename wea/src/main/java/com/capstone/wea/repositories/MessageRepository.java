@@ -13,8 +13,9 @@ import java.util.List;
 
 public interface MessageRepository extends JpaRepository<CMACMessage, Integer> {
     CMACMessage findFirstByExpiresAfter(@Param("now") OffsetDateTime now);
+    CMACMessage findFirstByMessageNumberNotInAndExpiresAfter(@Param("numbers") List<Integer> messageNumbers,
+                                                             @Param("now") OffsetDateTime now);
     CMACMessage findByCapIdentifier(String capIdentifier);
-    Page<CMACMessage> findAllBySender(String sender, Pageable page);
     CMACMessage findFirstBySender(String sender);
     @Query(nativeQuery = true, value = "call GetMessageData(:sender, :pageNum, :messageNumber, :messageType, " +
             ":fromDate, :toDate, :orderByDate, :orderByDesc)")
