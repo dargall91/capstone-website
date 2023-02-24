@@ -56,9 +56,7 @@ public class CMACAlertInfo {
         expires = OffsetDateTime.parse(capInfoModel.getExpires()).atZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime();;
         senderName = capInfoModel.getSenderName();
 
-        for (CAPAreaModel capAreaModel : capInfoModel.getArea()) {
-            alertAreaList.add(new CMACAlertArea(capAreaModel));
-        }
+        alertAreaList.add(new CMACAlertArea(capInfoModel.getArea().get(0)));
 
         alertTextList.add(new CMACAlertText(capInfoModel.getHeadline(), capInfoModel.getDescription()));
     }
@@ -77,5 +75,17 @@ public class CMACAlertInfo {
 
     public void setExpires(String expires) {
         this.expires = OffsetDateTime.parse(expires);
+    }
+
+    public List<CMACAlertArea> getAlertAreaList() {
+        return alertAreaList;
+    }
+
+    public void setAlertAreaList(List<CMACAlertArea> alertAreaList) {
+        this.alertAreaList = alertAreaList;
+    }
+
+    public String getSenderName() {
+        return senderName;
     }
 }

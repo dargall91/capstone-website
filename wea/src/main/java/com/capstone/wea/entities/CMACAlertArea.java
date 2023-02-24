@@ -65,4 +65,28 @@ public class CMACAlertArea {
     public void setAlertAreaId(long alertAreaId) {
         this.alertAreaId = alertAreaId;
     }
+
+    public String getPolygon() {
+        return polygon;
+    }
+
+    public void setPolygon(String polygon) {
+        this.polygon = polygon;
+    }
+
+    public String getCircle() {
+        return circle;
+    }
+
+    public void setCircle(String circle) {
+        this.circle = circle;
+    }
+
+    public List<String> getGeocodeList() {
+        return geocodeList;
+    }
+
+    public void setGeocodeList(List<String> geocodeList) {
+        this.geocodeList = geocodeList;
+    }
 }
