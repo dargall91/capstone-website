@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { AlertProvider } from "./AlertContext";
 import App from "./App";
 import { AppProvider } from "./context";
 import { PolygonProvider } from "./PolygonContext";
@@ -9,13 +10,10 @@ root.render(
   <React.StrictMode>
     <PolygonProvider>
       <AppProvider>
-        <App />
+        <AlertProvider>
+          <App />
+        </AlertProvider>
       </AppProvider>
     </PolygonProvider>
   </React.StrictMode>
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();

@@ -8,13 +8,15 @@ import Login from "./components/Login";
 import NavOptions from "./components/NavOptions";
 import Filters from "./components/Filters";
 import MapContainer from "./components/MapContainer";
+import { useAlertContext } from "./AlertContext";
 
 // I placed test text and context placeholder text for
 // everyone to hopefully understand how the context works.
 // It will show up in the test text main, and also the developer console.
 
 function App() {
-  const { showModal, login } = useGlobalContext();
+  const { login } = useGlobalContext();
+  const { showModal } = useAlertContext();
 
   return (
     <main>

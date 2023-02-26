@@ -1,7 +1,7 @@
 import { useGlobalContext } from "../context";
 
 const Modal = () => {
-  const { selectedAlert, closeModal, modalImage } = useGlobalContext();
+  const { selectedAlert, closeModal, modalImage } = useAlertContext();
 
   const {
     date,
