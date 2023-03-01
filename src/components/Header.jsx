@@ -1,8 +1,8 @@
 import { useAlertContext } from "../AlertContext";
-import { useGlobalContext } from "../context";
+import { useLoginContext } from "../LoginContext";
 
 const Header = () => {
-  const { date } = useGlobalContext();
+  const { date } = useLoginContext();
   const { fullData } = useAlertContext();
 
   return (

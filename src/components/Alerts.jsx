@@ -1,9 +1,9 @@
 import { useAlertContext } from "../AlertContext";
-import { useGlobalContext } from "../context";
+import { useNavigationContext } from "../NavigationContext";
 import { usePolygonContext } from "../PolygonContext";
 
 const Alerts = () => {
-  const { page } = useGlobalContext();
+  const { page } = useNavigationContext();
   const { selectAlert, dbAlertList } = useAlertContext();
   const { buildURL } = usePolygonContext();
 

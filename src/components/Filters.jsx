@@ -1,4 +1,4 @@
-import { useGlobalContext } from "../context";
+import { useNavigationContext } from "../NavigationContext";
 import { useState, createRef } from "react";
 
 const Filters = () => {
@@ -8,7 +8,8 @@ const Filters = () => {
   const [toDate, setToDate] = useState("");
   const [sortBy, setSortBy] = useState("date");
   const [sortOrder, setSortOrder] = useState("desc");
-  const { buildFilters, setPage } = useGlobalContext();
+
+  const { buildFilters, setPage } = useNavigationContext();
 
   const from = createRef();
   const to = createRef();

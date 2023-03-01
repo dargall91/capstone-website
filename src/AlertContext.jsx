@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
-import { useGlobalContext } from "./context";
+import { useNavigationContext } from "./NavigationContext";
+import { useLoginContext } from "./LoginContext";
 
 const baseUrl = "http://localhost:8080/wea/api/";
 
@@ -14,7 +15,8 @@ const AlertProvider = ({ children }) => {
   const [fullData, setFullData] = useState([]);
   const [modalImage, setModalImage] = useState("");
 
-  const { alertOriginator, page, filters } = useGlobalContext();
+  const { page, filters } = useNavigationContext();
+  const { setAlertOriginator, alertOriginator, getDate } = useLoginContext();
 
   // Functions
   /**
@@ -60,6 +62,8 @@ const AlertProvider = ({ children }) => {
       return;
     }
 
+    getDate();
+
     getMessageList(alertOriginator).then((data) =>
       setDbAlertList(data.messageStats)
     );
@@ -103,6 +107,8 @@ const AlertProvider = ({ children }) => {
         fullData,
         modalImage,
         setModalImage,
+        setAlertOriginator,
+        getMessageList,
       }}
     >
       {children}
