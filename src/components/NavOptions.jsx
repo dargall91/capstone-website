@@ -1,7 +1,7 @@
-import { useGlobalContext } from "../context";
+import { useAlertContext } from "../AlertContext";
 
 const NavOptions = () => {
-  const { increasePage, decreasePage, page, fullData } = useGlobalContext();
+  const { increasePage, decreasePage, page, fullData } = useAlertContext();
 
   const next = fullData.next;
   const prev = fullData.prev;

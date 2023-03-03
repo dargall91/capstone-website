@@ -1,7 +1,10 @@
-import { useGlobalContext } from "../context";
+import { useAlertContext } from "../AlertContext";
+import { useNavigationContext } from "../NavigationContext";
+import { usePolygonContext } from "../PolygonContext";
 
 const Alerts = () => {
-  const { selectAlert, dbAlertList, page, buildURL } = useGlobalContext();
+  const { selectAlert, dbAlertList, page } = useAlertContext();
+  const { buildURL } = usePolygonContext();
 
   if (dbAlertList.length < 1 && page !== 1) {
     return (

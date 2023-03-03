@@ -1,5 +1,5 @@
-import { useGlobalContext } from "../context";
 import { useState, createRef } from "react";
+import { useAlertContext } from "../AlertContext";
 
 const Filters = () => {
   const [mType, setMType] = useState("");
@@ -8,7 +8,7 @@ const Filters = () => {
   const [toDate, setToDate] = useState("");
   const [sortBy, setSortBy] = useState("date");
   const [sortOrder, setSortOrder] = useState("desc");
-  const { buildFilters, setPage } = useGlobalContext();
+  const { buildFilters, setPage } = useAlertContext();
 
   const from = createRef();
   const to = createRef();

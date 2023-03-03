@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useGlobalContext } from "../context";
+import { useAlertContext } from "../AlertContext";
 
 const Login = () => {
   const [user, setUser] = useState("");
-  const { setAlertOriginator, setLogin } = useGlobalContext();
+  const { setAlertOriginator, setLogin } = useAlertContext();
 
   const handleChange = (e) => {
     setUser(e.target.value);
