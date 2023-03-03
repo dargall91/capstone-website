@@ -42,7 +42,6 @@ const PolygonProvider = ({ children }) => {
 
     let center = [];
     center = await getCenter(container);
-    console.log(center);
   };
 
   const buildURL = ({ coordinates, geocodes }) => {
@@ -81,7 +80,6 @@ const PolygonProvider = ({ children }) => {
       }
       pathIndex++;
     });
-    console.log(src);
 
     return src;
   };
@@ -112,8 +110,6 @@ const PolygonProvider = ({ children }) => {
       }
       pathIndex++;
     });
-
-    console.log(src);
 
     return src;
   };
