@@ -1,5 +1,4 @@
 import { useAlertContext } from "../AlertContext";
-import { useNavigationContext } from "../NavigationContext";
 import { usePolygonContext } from "../PolygonContext";
 
 const Alerts = () => {

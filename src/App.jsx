@@ -8,8 +8,6 @@ import Login from "./components/Login";
 import NavOptions from "./components/NavOptions";
 import Filters from "./components/Filters";
 import MapContainer from "./components/MapContainer";
-import { useAlertContext } from "./AlertContext";
-import { useLoginContext } from "./LoginContext";
 
 // I placed test text and context placeholder text for
 // everyone to hopefully understand how the context works.

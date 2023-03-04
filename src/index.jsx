@@ -3,7 +3,6 @@ import ReactDOM from "react-dom/client";
 import { AlertProvider } from "./AlertContext";
 import App from "./App";
 import { PolygonProvider } from "./PolygonContext";
-import { AlertProvider } from "./AlertContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
