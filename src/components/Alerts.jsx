@@ -23,7 +23,7 @@ const Alerts = () => {
 
   return (
     <section className="section-center">
-      {dbAlertList.forEach((alert) => {
+      {dbAlertList.map((alert) => {
         const { messageNumber, date, messageType, coordinates, geocodes } =
           alert;
 
