@@ -1,9 +1,7 @@
 import { useAlertContext } from "../AlertContext";
-import { useLoginContext } from "../LoginContext";
 
 const Header = () => {
-  const { date } = useLoginContext();
-  const { fullData } = useAlertContext();
+  const { date, fullData } = useAlertContext();
 
   return (
     <header className="header-container">

@@ -3,8 +3,7 @@ import { useNavigationContext } from "../NavigationContext";
 import { usePolygonContext } from "../PolygonContext";
 
 const Alerts = () => {
-  const { page } = useNavigationContext();
-  const { selectAlert, dbAlertList } = useAlertContext();
+  const { selectAlert, dbAlertList, page } = useAlertContext();
   const { buildURL } = usePolygonContext();
 
   if (dbAlertList.length < 1 && page !== 1) {

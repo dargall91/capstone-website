@@ -1,7 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigationContext } from "./NavigationContext";
-import { useLoginContext } from "./LoginContext";
 
 const baseUrl = "http://localhost:8080/wea/api/";
 
@@ -14,9 +12,11 @@ const AlertProvider = ({ children }) => {
   const [dbAlertList, setDbAlertList] = useState([]);
   const [fullData, setFullData] = useState([]);
   const [modalImage, setModalImage] = useState("");
-
-  const { page, filters } = useNavigationContext();
-  const { setAlertOriginator, alertOriginator, getDate } = useLoginContext();
+  const [alertOriginator, setAlertOriginator] = useState("");
+  const [date, setDate] = useState("");
+  const [login, setLogin] = useState(false);
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState("");
 
   // Functions
   /**
@@ -39,6 +39,45 @@ const AlertProvider = ({ children }) => {
       return;
     }
     setShowModal(false);
+  };
+
+  const getDate = () => {
+    let today = new Date();
+    const formatted = new Intl.DateTimeFormat("en-us", {
+      dateStyle: "long",
+      timeStyle: "short",
+    });
+    setDate(formatted.format(today));
+  };
+
+  const increasePage = () => {
+    if (fullData.next) {
+      let curr = page;
+      curr = curr + 1;
+      setPage(curr);
+    }
+  };
+
+  const decreasePage = () => {
+    if (fullData.prev) {
+      let curr = page;
+      curr = curr - 1;
+      setPage(curr);
+    }
+  };
+
+  const buildFilters = ({ mType, mNum, frDate, toDate, sortBy, sortOrder }) => {
+    let filterString = `?${mType !== "" ? "messageType=" : ""}${mType}${
+      mType !== "" ? "&" : ""
+    }${mNum !== "" ? "messageNumber=" : ""}${mNum}${mNum !== "" ? "&" : ""}${
+      frDate !== "" ? "fromDate=" : ""
+    }${frDate}${frDate !== "" ? "&" : ""}${
+      toDate !== "" ? "toDate=" : ""
+    }${toDate}${
+      toDate !== "" ? "&" : ""
+    }sortBy=${sortBy}&sortOrder=${sortOrder}`;
+
+    setFilters(filterString);
   };
 
   /**
@@ -109,6 +148,13 @@ const AlertProvider = ({ children }) => {
         setModalImage,
         setAlertOriginator,
         getMessageList,
+        login,
+        setLogin,
+        setPage,
+        buildFilters,
+        date,
+        increasePage,
+        decreasePage,
       }}
     >
       {children}

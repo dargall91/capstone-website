@@ -13,10 +13,11 @@ const NavigationProvider = ({ children }) => {
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState("");
 
+  const { fullData } = useAlertContext();
+
   // Functions
 
   const increasePage = () => {
-    const { fullData } = useAlertContext();
     if (fullData.next) {
       let curr = page;
       curr = curr + 1;
@@ -25,7 +26,6 @@ const NavigationProvider = ({ children }) => {
   };
 
   const decreasePage = () => {
-    const { fullData } = useAlertContext();
     if (fullData.prev) {
       let curr = page;
       curr = curr - 1;

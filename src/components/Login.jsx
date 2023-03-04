@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { useLoginContext } from "../LoginContext";
+import { useAlertContext } from "../AlertContext";
 
 const Login = () => {
   const [user, setUser] = useState("");
-
-  const { setAlertOriginator, setLogin } = useLoginContext();
+  const { setAlertOriginator, setLogin } = useAlertContext();
 
   const handleChange = (e) => {
     setUser(e.target.value);

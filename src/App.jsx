@@ -1,4 +1,5 @@
 import "./App.css";
+import { useAlertContext } from "./AlertContext";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Alerts from "./components/Alerts";
@@ -15,8 +16,7 @@ import { useLoginContext } from "./LoginContext";
 // It will show up in the test text main, and also the developer console.
 
 function App() {
-  const { login } = useLoginContext();
-  const { showModal } = useAlertContext();
+  const { showModal, login } = useAlertContext();
 
   return (
     <main>
