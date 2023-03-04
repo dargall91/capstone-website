@@ -5,24 +5,27 @@ const Modal = () => {
 
   const {
     sentDateTime,
+    expiresDateTime,
     messageNumber,
     averageTime,
     shortestTime,
-    longestTime,
-    averageDelay,
+    averageDisplayDelay,
     deviceCount,
-    receivedOutsideCount,
-    displayedOutsideCount,
-    receivedAfterExpiredCount,
-    displayedAfterExpiredCount,
+    receivedOutside,
+    displayedOutside,
+    firstDisplayed,
+    firstReceived,
+    averageDistanceFromPolygon,
+    expectedDeviceCount,
   } = selectedAlert[0];
 
   return (
     <aside className="modal-overlay">
       <div className="modal-container">
         <header>
-          <h4>CMAC Alert {messageNumber}</h4>
-          <h4>{sentDateTime}</h4>
+          <h4>Message Number: {messageNumber}</h4>
+          <h4>Time Sent: {sentDateTime}</h4>
+          <h4>Time Expired: {expiresDateTime}</h4>
           <button
             className="btn btn-hipster close-btn top-btn"
             onClick={closeModal}
@@ -33,19 +36,44 @@ const Modal = () => {
         <img className="img modal-img" src={modalImage} />
 
         <div className="modal-content">
-          <p>CMAC Average Time: {averageTime}</p>
-          <p>CMAC Lowest Response Time: {shortestTime}</p>
-          <p>CMAC Highest Reponse Time: {longestTime}</p>
-          <p>CMAC Average Time Delay: {averageDelay}</p>
-          <p>Device Count: {deviceCount}</p>
-          <p>Total devices receieved outside area: {receivedOutsideCount}</p>
-          <p>Total devices receieved outside area: {displayedOutsideCount}</p>
+          <p>Average Time: {averageTime === null ? "N/A" : averageTime}</p>
           <p>
-            Total devices received after expired: {receivedAfterExpiredCount}
+            Lowest Response Time: {shortestTime === null ? "N/A" : shortestTime}
           </p>
           <p>
-            Total devices displayed after expired: {displayedAfterExpiredCount}
+            Average Time Delay:
+            {averageDisplayDelay === null ? " N/A" : ` ${averageDisplayDelay}`}
           </p>
+          <p>
+            Device Count: {deviceCount === null ? " N/A" : ` ${deviceCount}`}
+          </p>
+          <p>
+            Total devices receieved outside area:
+            {receivedOutside === null ? " N/A" : ` ${receivedOutside}`}
+          </p>
+          <p>
+            Total devices displayed outside area:
+            {displayedOutside === null ? " N/A" : ` ${displayedOutside}`}
+          </p>
+          <p>
+            First displayed time:
+            {firstDisplayed === null ? " N/A" : ` ${firstDisplayed}`}
+          </p>
+          <p>
+            First receieved time:
+            {firstReceived === null ? " N/A" : ` ${firstReceived}`}
+          </p>
+          <p>
+            Average distance outside of Alert Area:
+            {averageDistanceFromPolygon === null
+              ? " N/A"
+              : ` ${averageDistanceFromPolygon}`}
+          </p>
+          <p>
+            First receieved time:
+            {expectedDeviceCount === null ? " N/A" : ` ${expectedDeviceCount}`}
+          </p>
+
           <button className="btn btn-hipster close-btn" onClick={closeModal}>
             Close
           </button>

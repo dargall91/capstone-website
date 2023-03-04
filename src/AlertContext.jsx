@@ -151,6 +151,7 @@ const AlertProvider = ({ children }) => {
         getMessageList,
         login,
         setLogin,
+        page,
         setPage,
         buildFilters,
         date,

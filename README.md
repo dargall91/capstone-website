@@ -2,6 +2,10 @@ This project is a website designed for Alert Originators to login and be able to
 
 This project was bootstrapped with [Vite](https://github.com/vitejs/vite).
 
+Node version 16+ is required for the application to run.
+
+(If a previous version of the application was run with create react app, please delete your node_modules folder and do a fresh npm install)
+
 ## Available Scripts
 
 In the project directory, you can run:
