@@ -24,8 +24,13 @@ const Alerts = () => {
   return (
     <section className="section-center">
       {dbAlertList.map((alert) => {
-        const { messageNumber, date, messageType, coordinates, geocodes } =
-          alert;
+        const {
+          messageNumber,
+          sentDateTime,
+          messageType,
+          coordinates,
+          geocodes,
+        } = alert;
 
         let location = {
           coordinates: coordinates,
@@ -39,7 +44,7 @@ const Alerts = () => {
         return (
           <article key={messageNumber} className="single-alert">
             <header>
-              <h5>{date}</h5>
+              <h5>{sentDateTime}</h5>
               <h5>{messageNumber}</h5>
             </header>
 

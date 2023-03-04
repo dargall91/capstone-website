@@ -4,7 +4,7 @@ const Modal = () => {
   const { selectedAlert, closeModal, modalImage } = useAlertContext();
 
   const {
-    date,
+    sentDateTime,
     messageNumber,
     averageTime,
     shortestTime,
@@ -22,7 +22,7 @@ const Modal = () => {
       <div className="modal-container">
         <header>
           <h4>CMAC Alert {messageNumber}</h4>
-          <h4>{date}</h4>
+          <h4>{sentDateTime}</h4>
           <button
             className="btn btn-hipster close-btn top-btn"
             onClick={closeModal}

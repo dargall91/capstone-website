@@ -93,6 +93,7 @@ const AlertProvider = ({ children }) => {
     const result = await axios(
       `${baseUrl}${ao}/messages/${page}/filter${filters}`
     );
+    console.log(result.data);
     return result.data;
   };
 

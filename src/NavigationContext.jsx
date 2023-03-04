@@ -10,10 +10,7 @@ const NavigationContext = React.createContext();
 const NavigationProvider = ({ children }) => {
   // State Variables
 
-  const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState("");
-
-  const { fullData } = useAlertContext();
+  const { fullData, setFilters, filters, page, setPage } = useAlertContext();
 
   // Functions
 
