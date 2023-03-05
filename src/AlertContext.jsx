@@ -97,43 +97,39 @@ const AlertProvider = ({ children }) => {
     return result.data;
   };
 
+  const updateMessageInformation = async () => {
+    const data = await getMessageList(alertOriginator);
+    setDbAlertList(data.messageStats);
+    setFullData(data);
+  };
+
   useEffect(() => {
     if (!alertOriginator) {
       return;
     }
 
-    getDate();
+    const initialLog = async () => {
+      getDate();
+      updateMessageInformation();
+    };
 
-    getMessageList(alertOriginator).then((data) =>
-      setDbAlertList(data.messageStats)
-    );
-
-    getMessageList(alertOriginator).then((data) => setFullData(data));
-    // eslint-disable-next-line
+    initialLog();
   }, [alertOriginator]);
 
   useEffect(() => {
     if (!alertOriginator) {
       return;
     }
-    getMessageList(alertOriginator).then((data) =>
-      setDbAlertList(data.messageStats)
-    );
 
-    getMessageList(alertOriginator).then((data) => setFullData(data));
-    // eslint-disable-next-line
+    updateMessageInformation();
   }, [page]);
 
   useEffect(() => {
     if (!alertOriginator) {
       return;
     }
-    getMessageList(alertOriginator).then((data) =>
-      setDbAlertList(data.messageStats)
-    );
 
-    getMessageList(alertOriginator).then((data) => setFullData(data));
-    // eslint-disable-next-line
+    updateMessageInformation();
   }, [filters]);
 
   return (
