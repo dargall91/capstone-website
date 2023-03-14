@@ -1,8 +1,5 @@
 package com.capstone.wea.model.cap;
 
-import com.capstone.wea.model.cmac.CMACAlertAreaModel;
-import com.capstone.wea.model.cmac.CMACAlertInfoModel;
-import com.capstone.wea.model.cmac.CMACAlertTextModel;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
@@ -45,43 +42,59 @@ public class CAPInfoModel {
     @JacksonXmlElementWrapper(useWrapping = false)
     private List<CAPAreaModel> area;
 
-    public CMACAlertInfoModel toCmac() {
-        CMACAlertInfoModel cmac = new CMACAlertInfoModel();
+    public String getCategory() {
+        return category;
+    }
 
-        cmac.setCategory(category);
-        cmac.setSeverity(severity);
-        cmac.setUrgency(urgency);
-        cmac.setCertainty(certainty);
-        cmac.setExpires(expires);
-        cmac.setSenderName(senderName);
-        List <CMACAlertAreaModel> cmacArea = new ArrayList<>();
+    public String getEvent() {
+        return event;
+    }
 
-        for (CAPAreaModel areaModel : area) {
-            cmacArea.add(areaModel.toCmac());
-        }
-        cmac.setAlertAreaList(cmacArea);
+    public String getResponseType() {
+        return responseType;
+    }
 
-        List<CMACAlertTextModel> cmacText = new ArrayList<>();
+    public String getUrgency() {
+        return urgency;
+    }
 
-        //in testing, I encountered a message that did not have a headline OR a description, which caused a null
-        // reference error here
-        if (headline == null) {
-            headline = "null headline";
-        }
+    public String getSeverity() {
+        return severity;
+    }
 
-        if (description == null) {
-            description = "null description";
-        }
+    public String getCertainty() {
+        return certainty;
+    }
 
-        cmacText.add(new CMACAlertTextModel());
-        cmacText.get(0).setLanguage("English");
-        cmacText.get(0).setShortMessage(headline.replace("\n", " "));
-        cmacText.get(0).setShortLength(cmacText.get(0).getShortMessage().length());
-        cmacText.get(0).setLongMessage(description.replace("\n", " "));
-        cmacText.get(0).setLongLength(cmacText.get(0).getLongMessage().length());
+    public CAPEventCodeModel getEventCode() {
+        return eventCode;
+    }
 
-        cmac.setAlertTextList(cmacText);
+    public String getExpires() {
+        return expires;
+    }
 
-        return cmac;
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public String getHeadline() {
+        return headline;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getInstruction() {
+        return instruction;
+    }
+
+    public String getContact() {
+        return contact;
+    }
+
+    public List<CAPAreaModel> getArea() {
+        return area;
     }
 }

@@ -1,14 +1,11 @@
 package com.capstone.wea.model.cap;
 
-import com.capstone.wea.model.cmac.CMACMessageModel;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
-import java.time.LocalDateTime;
-import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JacksonXmlRootElement(localName = "alert")
@@ -30,17 +27,31 @@ public class CAPMessageModel {
     @JsonProperty("info")
     private CAPInfoModel info;
 
-    @JsonIgnoreProperties
-    public CMACMessageModel toCmac() {
-        CMACMessageModel cmac = new CMACMessageModel();
+    public String getIdentifier() {
+        return identifier;
+    }
 
-        cmac.setSender(sender.toLowerCase());
-        cmac.setSentDateTime(sent);
-        cmac.setStatus(status);
-        cmac.setMessageType(msgType);
-        cmac.setCapIdentifier(identifier);
-        cmac.setAlertInfo(info.toCmac());
+    public String getSender() {
+        return sender;
+    }
 
-        return cmac;
+    public String getSent() {
+        return sent;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public String getMsgType() {
+        return msgType;
+    }
+
+    public String getScope() {
+        return scope;
+    }
+
+    public CAPInfoModel getInfo() {
+        return info;
     }
 }

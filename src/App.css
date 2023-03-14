@@ -465,6 +465,15 @@ ul {
   border-radius: var(--borderRadius);
 }
 
+.modal-container::-webkit-scrollbar {
+  display: none;
+}
+
+.modal-container {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
 .modal-img {
   height: 25rem;
   border-top-left-radius: var(--borderRadius);

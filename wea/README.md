@@ -4,23 +4,14 @@ This document provides an overview on how to start the server and use the API.
 
 ## Database Setup
 
-Before running this application, make sure your database is up-to-date with the latest schema and has some sample 
-data to query. You can use Alex's `database_schema.sql` query to set up the database and then created your own sample 
-data, or you can use the `alert_db_dummy_data_setup.sql` query found this project's root directory to create both the 
-schema and populate it with sample data. It is recommended that you re-run one of these queries at the beginning of each
-sprint and anytime you pull down the latest changes related to the server to make sure your local database works as
-intended.
-
-If you are making changes to the database schema, **DO NOT** directly modify the `alert_db_dummy_data_setup.sql` file. 
-These changes should be made in the `database_schema.sql`. The `alert_db_dummy_data.sql` file is an export created by
-MySQL and any changes made will be overwritten if a new export is produced. It may also fail to execute because it can 
-make the insert statements invalid.
+The database will not automatically create and update itself just by running the application.
 
 ## Starting the Server
 
 Java JDK 17 is required to run this project. This SpringBoot application can be run in your IDE as you would any other 
-application, or by navigating to this project's root directory in the terminal and using the `./gradlew bootRun` 
-command in linux, or `gradle bootRun` in Windows. 
+application, or by executing gradle commands in the terminal.  There are now two different builds you can use for 
+the application. To run the dev build, use the command `./gradlew bootRun`. To run the prod build, use the command
+`./gradlew prod`.
 
 ## Making API Requests
 
@@ -144,18 +135,12 @@ successful PUT, the HTTP response header will contain a Location that points to 
 
 #### Example Request Body:
 
-    <?xml version = "1.0" encoding = "UTF-8"?>
-    <CMAC_device_data>
-        <CMAC_user_time_received>2017-06-03T01:33:29</CMAC_user_time_received>
-        <CMAC_user_time_displayed>2017-06-03T01:33:36</CMAC_user_time_displayed>
-        <CMAC_user_location_received>48253</CMAC_user_location_received>
-        <CMAC_user_location_displayed>48253</CMAC_user_location_displayed>
-        <CMAC_message_number>00001059</CMAC_message_number>
-        <Received_Outside_Area>false</Received_Outside_Area>
-        <Displayed_Outside_Area>false</Displayed_Outside_Area>
-        <Received_After_Expired>false</Received_After_Expired>
-        <Displayed_After_Expired>false</Displayed_After_Expired>
-    </CMAC_device_data>
+    {
+        "messageNumber" : "0000000C",
+        "capIdentifier": "urn:oid:2.49.0.1.840.0.9bb69179ba44e3e26201b9f31e9bda2d1fa963e7.001.1",
+        "timeReceived": "2023-02-18T11:54:30Z",
+        "timeDisplayed": "2023-02-18T11:54:35Z"
+    }
 
 #### Example Response Location Header:
 
@@ -180,22 +165,21 @@ identifier.
 
 #### Example Request:
 
-    GET http://localhost:8080/wea/api/getUpload?identifier=12
+    GET http://localhost:8080/wea/api/getUpload?identifier=1
 
 #### Example Response Body:
 
-    <CMAC_device_data>
-        <CMAC_user_time_received>2017-06-03T01:33:29</CMAC_user_time_received>
-        <CMAC_user_time_displayed>2017-06-03T01:33:36</CMAC_user_time_displayed>
-        <CMAC_user_location_received>48253</CMAC_user_location_received>
-        <CMAC_user_location_displayed>48253</CMAC_user_location_displayed>
-        <CMAC_message_number>00001059</CMAC_message_number>
-        <Received_Outside_Area>false</Received_Outside_Area>
-        <Displayed_Outside_Area>false</Displayed_Outside_Area>
-        <Received_After_Expired>false</Received_After_Expired>
-        <Displayed_After_Expired>false</Displayed_After_Expired>
-        <id>12</id>
-    </CMAC_device_data>
+    {
+        "messageNumber": 1,
+        "capIdentifier": "urn:oid:2.49.0.1.840.0.9bb69179ba44e3e26201b9f31e9bda2d1fa963e7.001.1",
+        "timeReceived": "2023-02-18T06:54:30-05:00",
+        "timeDisplayed": "2023-02-18T06:54:35-05:00",
+        "receivedInside": false,
+        "displayedInside": false,
+        "messagePresented": false,
+        "locationAvailable": false,
+        "distanceFromPolygon": 0.0
+    }
 
 ### <a id="stats" /> Get Message Stats by AO
 
@@ -244,409 +228,55 @@ ascending order
     {
         "messageStats": [
             {
-                "messageNumber": "00000005",
-                "messageType": "Alert",
-                "date": "2022-11-11 02:04:24",
-                "averageTime": "00:11:42",
-                "shortestTime": "00:01:08",
-                "longestTime": "00:37:23",
-                "averageDelay": "00:00:21",
-                "deviceCount": 4,
-                "receivedOutsideCount": 2,
-                "displayedOutsideCount": 2,
-                "receivedAfterExpiredCount": 0,
-                "displayedAfterExpiredCount": 0,
-                "coordinates": [
-                    {
-                        "lat": "32.21",
-                        "lon": "-99.62"
-                    },
-                    {
-                        "lat": "32.27",
-                        "lon": "-100.15"
-                    },
-                    {
-                        "lat": "32.52",
-                        "lon": "-100.15"
-                    },
-                    {
-                        "lat": "32.52",
-                        "lon": "-100.16"
-                    },
-                    {
-                        "lat": "32.72",
-                        "lon": "-100.17"
-                    },
-                    {
-                        "lat": "32.85",
-                        "lon": "-99.61"
-                    },
-                    {
-                        "lat": "32.21",
-                        "lon": "-99.62"
-                    }
-                ],
-                "areas": null
-            },
-            {
-                "messageNumber": "00000006",
-                "messageType": "Alert",
-                "date": "2022-11-12 08:29:59",
-                "averageTime": "00:01:55",
-                "shortestTime": "00:00:33",
-                "longestTime": "00:03:02",
-                "averageDelay": "00:13:35",
-                "deviceCount": 4,
-                "receivedOutsideCount": 1,
-                "displayedOutsideCount": 0,
-                "receivedAfterExpiredCount": 0,
-                "displayedAfterExpiredCount": 0,
-                "coordinates": [
-                    {
-                        "lat": "32.21",
-                        "lon": "-99.62"
-                    },
-                    {
-                        "lat": "32.27",
-                        "lon": "-100.15"
-                    },
-                    {
-                        "lat": "32.52",
-                        "lon": "-100.15"
-                    },
-                    {
-                        "lat": "32.52",
-                        "lon": "-100.16"
-                    },
-                    {
-                        "lat": "32.72",
-                        "lon": "-100.17"
-                    },
-                    {
-                        "lat": "32.85",
-                        "lon": "-99.61"
-                    },
-                    {
-                        "lat": "32.21",
-                        "lon": "-99.62"
-                    }
-                ],
-                "areas": null
-            },
-            {
-                "messageNumber": "00000007",
-                "messageType": "Alert",
-                "date": "2022-11-13 11:48:01",
-                "averageTime": "00:02:47",
-                "shortestTime": "00:00:15",
-                "longestTime": "00:07:09",
-                "averageDelay": "00:00:20",
-                "deviceCount": 5,
-                "receivedOutsideCount": 1,
-                "displayedOutsideCount": 1,
-                "receivedAfterExpiredCount": 0,
-                "displayedAfterExpiredCount": 0,
-                "coordinates": [
-                    {
-                        "lat": "32.21",
-                        "lon": "-99.62"
-                    },
-                    {
-                        "lat": "32.27",
-                        "lon": "-100.15"
-                    },
-                    {
-                        "lat": "32.52",
-                        "lon": "-100.15"
-                    },
-                    {
-                        "lat": "32.52",
-                        "lon": "-100.16"
-                    },
-                    {
-                        "lat": "32.72",
-                        "lon": "-100.17"
-                    },
-                    {
-                        "lat": "32.85",
-                        "lon": "-99.61"
-                    },
-                    {
-                        "lat": "32.21",
-                        "lon": "-99.62"
-                    }
-                ],
-                "areas": null
-            },
-            {
-                "messageNumber": "00000008",
-                "messageType": "Alert",
-                "date": "2022-11-12 17:18:31",
-                "averageTime": "00:00:55",
-                "shortestTime": "00:00:27",
-                "longestTime": "00:01:47",
-                "averageDelay": "00:00:23",
-                "deviceCount": 3,
-                "receivedOutsideCount": 0,
-                "displayedOutsideCount": 0,
-                "receivedAfterExpiredCount": 0,
-                "displayedAfterExpiredCount": 0,
-                "coordinates": [
-                    {
-                        "lat": "32.21",
-                        "lon": "-99.62"
-                    },
-                    {
-                        "lat": "32.27",
-                        "lon": "-100.15"
-                    },
-                    {
-                        "lat": "32.52",
-                        "lon": "-100.15"
-                    },
-                    {
-                        "lat": "32.52",
-                        "lon": "-100.16"
-                    },
-                    {
-                        "lat": "32.72",
-                        "lon": "-100.17"
-                    },
-                    {
-                        "lat": "32.85",
-                        "lon": "-99.61"
-                    },
-                    {
-                        "lat": "32.21",
-                        "lon": "-99.62"
-                    }
-                ],
-                "areas": null
-            },
-            {
-                "messageNumber": "00000009",
-                "messageType": "Alert",
-                "date": "2022-11-13 17:18:31",
-                "averageTime": "00:04:46",
-                "shortestTime": "00:04:01",
-                "longestTime": "00:05:30",
-                "averageDelay": "00:00:35",
-                "deviceCount": 2,
-                "receivedOutsideCount": 1,
-                "displayedOutsideCount": 0,
-                "receivedAfterExpiredCount": 0,
-                "displayedAfterExpiredCount": 0,
-                "coordinates": [
-                    {
-                        "lat": "32.21",
-                        "lon": "-99.62"
-                    },
-                    {
-                        "lat": "32.27",
-                        "lon": "-100.15"
-                    },
-                    {
-                        "lat": "32.52",
-                        "lon": "-100.15"
-                    },
-                    {
-                        "lat": "32.52",
-                        "lon": "-100.16"
-                    },
-                    {
-                        "lat": "32.72",
-                        "lon": "-100.17"
-                    },
-                    {
-                        "lat": "32.85",
-                        "lon": "-99.61"
-                    },
-                    {
-                        "lat": "32.21",
-                        "lon": "-99.62"
-                    }
-                ],
-                "areas": null
-            },
-            {
-                "messageNumber": "0000000A",
-                "messageType": "Alert",
-                "date": "2022-10-13 17:18:31",
-                "averageTime": "00:02:16",
-                "shortestTime": "00:00:58",
-                "longestTime": "00:03:45",
-                "averageDelay": "00:00:16",
-                "deviceCount": 5,
-                "receivedOutsideCount": 2,
-                "displayedOutsideCount": 2,
-                "receivedAfterExpiredCount": 0,
-                "displayedAfterExpiredCount": 0,
-                "coordinates": [
-                    {
-                        "lat": "32.21",
-                        "lon": "-99.62"
-                    },
-                    {
-                        "lat": "32.27",
-                        "lon": "-100.15"
-                    },
-                    {
-                        "lat": "32.52",
-                        "lon": "-100.15"
-                    },
-                    {
-                        "lat": "32.52",
-                        "lon": "-100.16"
-                    },
-                    {
-                        "lat": "32.72",
-                        "lon": "-100.17"
-                    },
-                    {
-                        "lat": "32.85",
-                        "lon": "-99.61"
-                    },
-                    {
-                        "lat": "32.21",
-                        "lon": "-99.62"
-                    }
-                ],
-                "areas": null
-            },
-            {
-                "messageNumber": "0000000B",
-                "messageType": "Alert",
-                "date": "2022-10-13 17:18:31",
-                "averageTime": "00:02:45",
-                "shortestTime": "00:00:16",
-                "longestTime": "00:07:19",
-                "averageDelay": "00:00:10",
-                "deviceCount": 3,
-                "receivedOutsideCount": 0,
-                "displayedOutsideCount": 0,
-                "receivedAfterExpiredCount": 0,
-                "displayedAfterExpiredCount": 0,
-                "coordinates": [
-                    {
-                        "lat": "32.21",
-                        "lon": "-99.62"
-                    },
-                    {
-                        "lat": "32.27",
-                        "lon": "-100.15"
-                    },
-                    {
-                        "lat": "32.52",
-                        "lon": "-100.15"
-                    },
-                    {
-                        "lat": "32.52",
-                        "lon": "-100.16"
-                    },
-                    {
-                        "lat": "32.72",
-                        "lon": "-100.17"
-                    },
-                    {
-                        "lat": "32.85",
-                        "lon": "-99.61"
-                    },
-                    {
-                        "lat": "32.21",
-                        "lon": "-99.62"
-                    }
-                ],
-                "areas": null
-            },
-            {
-                "messageNumber": "0000000C",
-                "messageType": "Alert",
-                "date": "2022-11-13 20:01:39",
-                "averageTime": "00:01:16",
-                "shortestTime": "00:00:11",
-                "longestTime": "00:02:37",
-                "averageDelay": "00:00:14",
-                "deviceCount": 4,
-                "receivedOutsideCount": 0,
-                "displayedOutsideCount": 0,
-                "receivedAfterExpiredCount": 0,
-                "displayedAfterExpiredCount": 0,
-                "coordinates": [
-                    {
-                        "lat": "32.21",
-                        "lon": "-99.62"
-                    },
-                    {
-                        "lat": "32.27",
-                        "lon": "-100.15"
-                    },
-                    {
-                        "lat": "32.52",
-                        "lon": "-100.15"
-                    },
-                    {
-                        "lat": "32.52",
-                        "lon": "-100.16"
-                    },
-                    {
-                        "lat": "32.72",
-                        "lon": "-100.17"
-                    },
-                    {
-                        "lat": "32.85",
-                        "lon": "-99.61"
-                    },
-                    {
-                        "lat": "32.21",
-                        "lon": "-99.62"
-                    }
-                ],
-                "areas": null
-            },
-            {
-                "messageNumber": "0000000D",
+                "messageNumber": "00000001",
+                "capIdentifier": "urn:oid:2.49.0.1.840.0.adfefac513d29f9238844c1527105fc371c4f955.001.1",
                 "messageType": "Update",
-                "date": "2022-11-13 20:53:21",
-                "averageTime": "00:01:42",
-                "shortestTime": "00:00:11",
-                "longestTime": "00:03:26",
-                "averageDelay": "00:00:18",
-                "deviceCount": 4,
-                "receivedOutsideCount": 0,
-                "displayedOutsideCount": 0,
-                "receivedAfterExpiredCount": 0,
-                "displayedAfterExpiredCount": 0,
+                "sentDateTime": "2023-02-18 06:54:00.0",
+                "expiresDateTime": "2023-02-18 19:00:00.0",
                 "coordinates": [
                     {
-                        "lat": "32.21",
-                        "lon": "-99.62"
+                        "lat": "37.69",
+                        "lon": "-82.85"
                     },
                     {
-                        "lat": "32.27",
-                        "lon": "-100.15"
+                        "lat": "37.78",
+                        "lon": "-82.9"
                     },
                     {
-                        "lat": "32.52",
-                        "lon": "-100.15"
+                        "lat": "38.02",
+                        "lon": "-82.67"
                     },
                     {
-                        "lat": "32.52",
-                        "lon": "-100.16"
+                        "lat": "37.97",
+                        "lon": "-82.57"
                     },
                     {
-                        "lat": "32.72",
-                        "lon": "-100.17"
+                        "lat": "37.78",
+                        "lon": "-82.77"
                     },
                     {
-                        "lat": "32.85",
-                        "lon": "-99.61"
+                        "lat": "37.74",
+                        "lon": "-82.76"
                     },
                     {
-                        "lat": "32.21",
-                        "lon": "-99.62"
+                        "lat": "37.69",
+                        "lon": "-82.85"
                     }
                 ],
-                "areas": null
+                "geocodes": [
+                    "021115"
+                ],
+                "areaNames": [
+                    "Johnson County Kentucky"
+                ],
+                "deviceCount": 0,
+                "averageTime": null,
+                "shortestTime": null,
+                "firstReceived": null,
+                "averageDisplayDelay": null,
+                "firstDisplayed": null,
+                "receivedOutside": 0,
+                "displayedOutside": 0
             }
         ],
         "commonName": "National Weather Service",
@@ -655,25 +285,27 @@ ascending order
     }
 
 #### Json Response Key Definitions
-| JSON Key                   | Definition                                                                                                        |
-|----------------------------|-------------------------------------------------------------------------------------------------------------------|
-| messageStats               | an array of JSON objects that contain the collected stats for a cmac message                                      |
-| messageNumber              | The CMAC_message_number of the message for which these stats were collected                                       |
-| messageType                | The CMAC_message_type oof the alert                                                                               |
-| date                       | The CMAC_sent_date_time of the alert                                                                              |
-| averageTime                | the average time between when the message was sent and all devices received it                                    |
-| shortestTime               | the shortest time between when the message was sent and all devices received it                                   |
-| longestTime                | the longest time between when the message was sent and all devices received it                                    |
-| averageDelay               | the average delay between when all devices received the message and when the alert was displayed on the device    |
-| deviceCount                | the number of devices that received the message                                                                   |
-| receivedOutsideCount       | the number of devices that received the message outside of the target area                                        |
-| displayedOutsideCount      | the average devices for which the alert was displayed on that device outside the target area                      |
-| receivedAfterExpiredCount  | the number of devices that received the message after it expired                                                  |
-| displayedAfterExpiredCount | the number of devices that displayed the message to the user after it expired                                     |
-| coordinates                | an array of coordinates that comprise this messages polygon; if the message has no polygon this item will be null |
-| lat                        | the latitude of the polygon coordinate                                                                            |
-| lon                        | the longitude of the polygon coordinate                                                                           |
-| areas                      | an array of names of all the areas targeted by this message; if the message has a polygon this item will be null  |
-| commonName                 | the common name of the AO of these messages                                                                       |
-| prev                       | a boolean value that represents if there is a previous page of results; this is always true if page > 1           |
-| next                       | a boolean value that represents if there is an additional page of results after this one                          |
+| JSON Key              | Definition                                                                                                        |
+|-----------------------|-------------------------------------------------------------------------------------------------------------------|
+| messageStats          | an array of JSON objects that contain the collected stats for a cmac message                                      |
+| messageNumber         | The CMAC_message_number of the message                                                                            |
+| capIdentifier         | The CMAC_cap_identifier of the message                                                                            |
+| messageType           | The CMAC_message_type oof the alert                                                                               |
+| sentDateTime          | The CMAC_sent_date_time of the alert                                                                              |
+| expiresDateTime       | The CMAC_expires_date_time of the alert                                                                           |
+| averageTime           | the average time between when the message was sent and all devices received it                                    |
+| shortestTime          | the shortest time between when the message was sent and all devices received it                                   |
+| firsReceived          | the datetime that the first device to receive the message received it                                             |
+| averageDisplayDelay   | the average delay between when all devices received the message and when the alert was displayed on the device    |
+| firstDisplayed        | the datetime when the first device to display a message displayed it                                              |
+| deviceCount           | the number of devices that received the message                                                                   |
+| receivedOutsideCount  | the number of devices that received the message outside of the target area                                        |
+| displayedOutsideCount | the average devices for which the alert was displayed on that device outside the target area                      |
+| coordinates           | an array of coordinates that comprise this messages polygon; if the message has no polygon this item will be null |
+| lat                   | the latitude of the polygon coordinate                                                                            |
+| lon                   | the longitude of the polygon coordinate                                                                           |
+| geocodes              | the list of geocodes targeted by the message                                                                      |
+| areaNames             | the list of areas by name that corresponds to each geocode in the list                                            |
+| commonName            | the common name of the AO of these messages                                                                       |
+| prev                  | a boolean value that represents if there is a previous page of results; this is always true if page > 1           |
+| next                  | a boolean value that represents if there is an additional page of results after this one                          |
