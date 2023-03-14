@@ -1,7 +1,9 @@
-import { useGlobalContext } from "../context";
+import { useAlertContext } from "../AlertContext";
+import { usePolygonContext } from "../PolygonContext";
 
 const Alerts = () => {
-  const { selectAlert, dbAlertList, page, buildURL } = useGlobalContext();
+  const { selectAlert, dbAlertList, page } = useAlertContext();
+  const { buildURL } = usePolygonContext();
 
   if (dbAlertList.length < 1 && page !== 1) {
     return (
@@ -22,8 +24,13 @@ const Alerts = () => {
   return (
     <section className="section-center">
       {dbAlertList.map((alert) => {
-        const { messageNumber, date, messageType, coordinates, geocodes } =
-          alert;
+        const {
+          messageNumber,
+          sentDateTime,
+          messageType,
+          coordinates,
+          geocodes,
+        } = alert;
 
         let location = {
           coordinates: coordinates,
@@ -37,7 +44,7 @@ const Alerts = () => {
         return (
           <article key={messageNumber} className="single-alert">
             <header>
-              <h5>{date}</h5>
+              <h5>{sentDateTime}</h5>
               <h5>{messageNumber}</h5>
             </header>
 

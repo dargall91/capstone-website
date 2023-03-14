@@ -1,7 +1,7 @@
-import { useGlobalContext } from "../context";
+import { useAlertContext } from "../AlertContext";
 
 const Header = () => {
-  const { date, fullData } = useGlobalContext();
+  const { date, fullData } = useAlertContext();
 
   return (
     <header className="header-container">
