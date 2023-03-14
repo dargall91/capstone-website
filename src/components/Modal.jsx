@@ -19,19 +19,18 @@ const Modal = () => {
     expectedDeviceCount,
   } = selectedAlert[0];
 
+  const handleClick = (e) => {
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+  };
+
   return (
-    <aside className="modal-overlay">
-      <div className="modal-container">
+    <aside className="modal-overlay" onClick={closeModal}>
+      <div className="modal-container" onClick={handleClick}>
         <header>
           <h4>Message Number: {messageNumber}</h4>
           <h4>Time Sent: {sentDateTime}</h4>
           <h4>Time Expired: {expiresDateTime}</h4>
-          <button
-            className="btn btn-hipster close-btn top-btn"
-            onClick={closeModal}
-          >
-            Close
-          </button>
         </header>
         <img className="img modal-img" src={modalImage} />
 
@@ -73,10 +72,6 @@ const Modal = () => {
             First receieved time:
             {expectedDeviceCount === null ? " N/A" : ` ${expectedDeviceCount}`}
           </p>
-
-          <button className="btn btn-hipster close-btn" onClick={closeModal}>
-            Close
-          </button>
         </div>
       </div>
     </aside>
