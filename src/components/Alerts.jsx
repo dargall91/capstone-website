@@ -29,12 +29,12 @@ const Alerts = () => {
           sentDateTime,
           messageType,
           coordinates,
-          geocodes,
+          areaNames,
         } = alert;
 
         let location = {
           coordinates: coordinates,
-          geocodes: geocodes,
+          geocodes: areaNames,
         };
 
         const source = buildURL(location);
