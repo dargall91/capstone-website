@@ -104,4 +104,8 @@ public class CMACMessage {
     public void setAlertInfo(CMACAlertInfo alertInfo) {
         this.alertInfo = alertInfo;
     }
+
+    public void setExpires(OffsetDateTime expires) {
+        this.expires = expires;
+    }
 }

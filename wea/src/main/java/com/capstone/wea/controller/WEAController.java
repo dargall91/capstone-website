@@ -7,6 +7,7 @@ import com.capstone.wea.entities.Geocode;
 import com.capstone.wea.model.MessageStats;
 import com.capstone.wea.model.cap.IPAWSMessageList;
 
+import com.capstone.wea.parser.XMLParser;
 import com.capstone.wea.repositories.GeocodeRepository;
 import com.capstone.wea.repositories.projections.MessageDataProjection;
 import com.capstone.wea.repositories.projections.CollectedStatsProjections;
@@ -254,5 +255,22 @@ public class WEAController {
         }
 
         return ResponseEntity.ok(message.get());
+    }
+
+    /**
+     * Endpoint for testing the polygon smoothing algorithm. Hitting this endpoint will parse the test message, smooth
+     * the polygon, and insert it into the database. The message will not expire for 12 hours, allowing for ample
+     * test the message via android and view the results in the website
+     * @return
+     */
+    @GetMapping("polygonSmoothingMessage")
+    public ResponseEntity<?> parsePolygonSmoothingMessage() {
+        CMACMessage polgyonSmoothingMessage = XMLParser.parsePolygonSmoothingMessage();
+
+        //todo: smooth here
+
+        CMACMessage result = messageRepository.save(polgyonSmoothingMessage);
+
+        return ResponseEntity.ok(result);
     }
 }
