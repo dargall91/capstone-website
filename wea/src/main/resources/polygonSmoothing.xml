@@ -2,7 +2,6 @@
 <CMAC_Alert_Attributes xmlns = "cmac:2.0">
     <CMAC_protocol_version>2.0</CMAC_protocol_version>
     <CMAC_sending_gateway_id>http://wea_alert_gateway.gov</CMAC_sending_gateway_id>
-    <CMAC_message_number>00000000</CMAC_message_number>
     <CMAC_sender>team32capstone@asu.edu</CMAC_sender>
     <CMAC_sent_date_time>2023-03-14T00:00:00Z</CMAC_sent_date_time>
     <CMAC_status>Actual</CMAC_status>

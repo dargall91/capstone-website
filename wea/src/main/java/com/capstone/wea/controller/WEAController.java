@@ -267,7 +267,9 @@ public class WEAController {
     public ResponseEntity<?> parsePolygonSmoothingMessage() {
         CMACMessage polgyonSmoothingMessage = XMLParser.parsePolygonSmoothingMessage();
 
-        //todo: smooth here
+        String polygon = polgyonSmoothingMessage.getAlertInfo().getAlertAreaList().get(0).getPolygon();
+        polygon = Util.smoothPolygon(polygon);
+        polgyonSmoothingMessage.getAlertInfo().getAlertAreaList().get(0).setPolygon(polygon);
 
         CMACMessage result = messageRepository.save(polgyonSmoothingMessage);
 

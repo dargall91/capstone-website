@@ -57,21 +57,9 @@ public class MessageStats {
         String circleString = messageData.getCircle();
 
         if (!Util.isNullOrBlank(polygonString)) {
-            coordinates = new ArrayList<>();
-            List<String> splitPolygonString = List.of(polygonString.split(" "));
-
-            for (String coordinatePair : splitPolygonString) {
-                List<String> latLong = List.of(coordinatePair.split(","));
-                coordinates.add(new Coordinate(latLong.get(0), latLong.get(1)));
-            }
+            coordinates = Util.splitPolygon(polygonString);
         } else if (!Util.isNullOrBlank(circleString)) {
-            coordinates = new ArrayList<>();
-            List<String> splitCircleString = List.of(circleString.split(" "));
-
-            for (String coordinatePair : splitCircleString) {
-                List<String> latLong = List.of(coordinatePair.split(","));
-                coordinates.add(new Coordinate(latLong.get(0), latLong.get(1)));
-            }
+            coordinates = Util.splitPolygon(circleString);
         }
 
         geocodes = List.of(messageData.getGeocodes().split(","));

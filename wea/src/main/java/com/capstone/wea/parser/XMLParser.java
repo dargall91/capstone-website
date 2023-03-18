@@ -22,7 +22,7 @@ public class XMLParser {
     public static CMACMessage parsePolygonSmoothingMessage() {
         CMACMessage message = null;
         try {
-            File polygonSmoothingFile = new File("polygonSmoothing.xml");
+            File polygonSmoothingFile = new File("src/main/resources/polygonSmoothing.xml");
             XmlMapper mapper = new XmlMapper();
             mapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
             message = mapper.readValue(polygonSmoothingFile, CMACMessage.class);
