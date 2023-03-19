@@ -461,7 +461,7 @@ ul {
   max-width: 800px;
   height: 80vh;
   overflow: scroll;
-  background: var(--white);
+  background: var(--grey-100);
   border-radius: var(--borderRadius);
 }
 
@@ -503,6 +503,38 @@ ul {
 .close-btn {
   background: var(--red-dark);
   color: var(--white);
+}
+
+/* Card */
+
+.card-grid {
+  display: grid;
+  align-items: center;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  border-radius: 0.25rem;
+  background-color: white;
+  cursor: pointer;
+  height: 250px;
+  width: 200px;
+  margin: 10px;
+}
+
+.front {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
 }
 
 /* Footer */
