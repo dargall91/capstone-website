@@ -24,6 +24,7 @@ public class CMACMessage {
     @JsonProperty("CMAC_sender")
     private String sender;
     @JsonProperty("CMAC_sent_date_time")
+    @Column(columnDefinition = "DATETIME")
     private OffsetDateTime sentDateTime;
     @JsonProperty("CMAC_status")
     private String status;
@@ -32,8 +33,10 @@ public class CMACMessage {
     @JsonProperty("CMAC_cap_alert_uri")
     private String alertUri;
     @JsonProperty("CMAC_cap_sent_date_time")
+    @Column(columnDefinition = "DATETIME")
     private OffsetDateTime capSentDateTime;
     @JsonIgnore
+    @Column(columnDefinition = "DATETIME")
     private OffsetDateTime expires;
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="messageNumber")

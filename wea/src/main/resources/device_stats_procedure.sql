@@ -18,7 +18,11 @@ BEGIN
     MIN(timeDisplayed) AS firstDisplayed,
 	CAST(SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(timeDisplayed, timeReceived)))) AS TIME) AS averageDisplayDelay,
 	SUM(NOT receivedInside) AS receivedOutside,
-	SUM(NOT displayedInside) AS displayedOutside
+	SUM(NOT displayedInside) AS displayedOutside,
+    AVG((SELECT SUM(distanceFromPolygon) FROM CollectedDeviceData WHERE CollectedDeviceData.messageNumber = IFNULL(messageNumber, CMACMessage.messageNumber) AND messagePresented IS TRUE)) as averageDistance,
+    (SELECT MIN(distanceFromPolygon) FROM CollectedDeviceData WHERE CollectedDeviceData.messageNumber = IFNULL(messageNumber, CMACMessage.messageNumber) AND messagePresented IS TRUE) as minDistance,
+    (SELECT MAX(distanceFromPolygon) FROM CollectedDeviceData WHERE CollectedDeviceData.messageNumber = IFNULL(messageNumber, CMACMessage.messageNumber) AND messagePresented IS TRUE) as maxDistance,
+    SUM(messagePresented IS TRUE) as presented
 	FROM CollectedDeviceData JOIN CMACMessage
 	ON CMACMessage.messageNumber = CollectedDeviceData.messageNumber
     WHERE CMACMessage.sender = sender
@@ -32,5 +36,5 @@ BEGIN
         CASE WHEN NOT orderByDate AND orderByDesc THEN CMACMessage.messageNumber END DESC,
         CASE WHEN orderByDate AND NOT orderByDesc THEN sentDateTime END ASC,
         CASE WHEN orderByDate AND orderByDesc THEN sentDateTime END DESC
-    LIMIT 9 OFFSET 1;
+    LIMIT 9 OFFSET offsetVal;
 END

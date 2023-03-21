@@ -6,10 +6,11 @@ CREATE PROCEDURE IF NOT EXISTS GetMessageData(
     fromDate VARCHAR(10),
     toDate VARCHAR(10),
     orderByDate BIT,
-    orderByDesc BIT
+    orderByDesc BIT,
+    offsetVal INT
 )
 BEGIN
-	DECLARE offsetVal INT DEFAULT 9 * (IF(pageNum < 1, 1, pageNum) - 1);
+	SET GLOBAL group_concat_max_len = 10000;
 
     SELECT Coordinates.messageNumber, sentDateTime, expires, Coordinates.messageType, capIdentifier, polygon, circle,
     geocodes
@@ -32,7 +33,7 @@ BEGIN
 		LIMIT 10 OFFSET offsetVal
 	) as Coordinates
     JOIN (
-		SELECT group_concat(geocodeList) AS geocodes, CMACAlertArea_alertAreaId
+		SELECT group_concat(DISTINCT geocodeList) AS geocodes, CMACAlertArea_alertAreaId
 		FROM CMACCmasGeocode
 		WHERE CMACCmasGeocode.CMACAlertArea_alertAreaId = IFNULL(messageNumber, CMACCmasGeocode.CMACAlertArea_alertAreaId)
 		GROUP BY CMACAlertArea_alertAreaId

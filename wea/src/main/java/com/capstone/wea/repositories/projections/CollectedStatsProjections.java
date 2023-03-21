@@ -10,4 +10,8 @@ public interface CollectedStatsProjections {
     String getFirstDisplayed();
     int getReceivedOutside();
     int getDisplayedOutside();
+    Double getAverageDistance();
+    Double getMinDistance();
+    Double getMaxDistance();
+    Integer getPresented();
 }

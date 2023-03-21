@@ -25,6 +25,10 @@ public class MessageStats {
     private String firstDisplayed;
     private int receivedOutside;
     private int displayedOutside;
+    private Double averageDistance;
+    private Double minDistance;
+    private Double maxDistance;
+    private Integer presented;
 
     public MessageStats(CollectedStatsProjections deviceStats, MessageDataProjection messageData) {
         setDeviceStats(deviceStats);
@@ -44,6 +48,10 @@ public class MessageStats {
         firstDisplayed = deviceStats.getFirstDisplayed();
         receivedOutside = deviceStats.getReceivedOutside();
         displayedOutside = deviceStats.getDisplayedOutside();
+        averageDistance = deviceStats.getAverageDistance();
+        minDistance = deviceStats.getMinDistance();
+        maxDistance = deviceStats.getMaxDistance();
+        presented = deviceStats.getPresented();
     }
 
     private void setMessageData(MessageDataProjection messageData) {
@@ -61,6 +69,9 @@ public class MessageStats {
         } else if (!Util.isNullOrBlank(circleString)) {
             coordinates = Util.splitPolygon(circleString);
         }
+
+        String result = messageData.getGeocodes();
+        var something = result.split(",");
 
         geocodes = List.of(messageData.getGeocodes().split(","));
     }
@@ -196,5 +207,21 @@ public class MessageStats {
 
     public void setDisplayedOutside(int displayedOutside) {
         this.displayedOutside = displayedOutside;
+    }
+
+    public Double getAverageDistance() {
+        return averageDistance;
+    }
+
+    public Double getMinDistance() {
+        return minDistance;
+    }
+
+    public Double getMaxDistance() {
+        return maxDistance;
+    }
+
+    public Integer getPresented() {
+        return presented;
     }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -16,8 +17,10 @@ public class CollectedDeviceData {
     private int messageNumber;
     @Column(length = Integer.MAX_VALUE)
     private String capIdentifier;
-    private OffsetDateTime timeReceived;
-    private OffsetDateTime timeDisplayed;
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime timeReceived;
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime timeDisplayed;
     private boolean receivedInside;
     private boolean displayedInside;
     private boolean messagePresented;
@@ -48,19 +51,19 @@ public class CollectedDeviceData {
         this.capIdentifier = capIdentifier;
     }
 
-    public OffsetDateTime getTimeReceived() {
+    public LocalDateTime getTimeReceived() {
         return timeReceived;
     }
 
-    public void setTimeReceived(OffsetDateTime timeReceived) {
+    public void setTimeReceived(LocalDateTime timeReceived) {
         this.timeReceived = timeReceived;
     }
 
-    public OffsetDateTime getTimeDisplayed() {
+    public LocalDateTime getTimeDisplayed() {
         return timeDisplayed;
     }
 
-    public void setTimeDisplayed(OffsetDateTime timeDisplayed) {
+    public void setTimeDisplayed(LocalDateTime timeDisplayed) {
         this.timeDisplayed = timeDisplayed;
     }
 
