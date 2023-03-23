@@ -11,6 +11,7 @@ import java.util.List;
  */
 public class Util {
     private static final DecimalFormat numberFormat = new DecimalFormat("###.##");
+
     /**
      * Checks if a string is null or blank
      * @param value the string to check
@@ -76,5 +77,16 @@ public class Util {
         }
 
         return polygonString.toString().trim();
+    }
+
+    /**
+     * Wrapper because in addition to IsNullOrEmpty I also miss the null coalescing operator from C#
+     * @param input Value to check
+     * @param ifNull value to return if input is null
+     * @return Returns input if input is not null, otherwise returns ifNull
+     * @param <T> Type of input
+     */
+    public static <T> T nullCoalesce(T input, T ifNull) {
+        return (input == null) ? ifNull : input;
     }
 }

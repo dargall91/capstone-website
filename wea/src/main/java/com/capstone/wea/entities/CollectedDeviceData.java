@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 
 @Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -22,10 +21,10 @@ public class CollectedDeviceData {
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime timeDisplayed;
     private boolean receivedInside;
-    private boolean displayedInside;
     private boolean messagePresented;
     private boolean locationAvailable;
     private float distanceFromPolygon;
+    private boolean optedOut;
 
     public Long getId() {
         return id;
@@ -75,14 +74,6 @@ public class CollectedDeviceData {
         this.receivedInside = receivedInside;
     }
 
-    public boolean isDisplayedInside() {
-        return displayedInside;
-    }
-
-    public void setDisplayedInside(boolean displayedInside) {
-        this.displayedInside = displayedInside;
-    }
-
     public boolean isMessagePresented() {
         return messagePresented;
     }
@@ -105,5 +96,13 @@ public class CollectedDeviceData {
 
     public void setDistanceFromPolygon(float distanceFromPolygon) {
         this.distanceFromPolygon = distanceFromPolygon;
+    }
+
+    public boolean isOptedOut() {
+        return optedOut;
+    }
+
+    public void setOptedOut(boolean optedOut) {
+        this.optedOut = optedOut;
     }
 }

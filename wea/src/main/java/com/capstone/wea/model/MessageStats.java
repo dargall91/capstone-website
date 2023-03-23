@@ -5,6 +5,7 @@ import com.capstone.wea.repositories.projections.MessageDataProjection;
 import com.capstone.wea.repositories.projections.CollectedStatsProjections;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,18 +18,22 @@ public class MessageStats {
     private List<Coordinate> coordinates;
     private List<String> geocodes = new ArrayList<>();
     private List<String> areaNames = new ArrayList<>();
-    private int deviceCount;
+    private int received;
+    private int expectedReceived;
     private String averageTime;
     private String shortestTime;
     private String firstReceived;
-    private String averageDisplayDelay;
-    private String firstDisplayed;
+    private String averagePresentationDelay;
+    private String firstPresented;
     private int receivedOutside;
-    private int displayedOutside;
-    private Double averageDistance;
-    private Double minDistance;
-    private Double maxDistance;
-    private Integer presented;
+    private String averageDistance;
+    private String minDistance;
+    private String maxDistance;
+    private String medianDistance;
+    private int presented;
+    private int notPresentedOutside;
+    private int optedOut;
+    private  int presentedDefault;
 
     public MessageStats(CollectedStatsProjections deviceStats, MessageDataProjection messageData) {
         setDeviceStats(deviceStats);
@@ -37,21 +42,47 @@ public class MessageStats {
 
     private void setDeviceStats(CollectedStatsProjections deviceStats) {
         if (deviceStats == null) {
+            averageTime = "N/A";
+            shortestTime = "N/A";
+            firstReceived = "N/A";
+            firstPresented = "N/A";
+            averagePresentationDelay = "N/A";
+            received = 0;
+            receivedOutside = 0;
+            notPresentedOutside = 0;
+            optedOut = 0;
+            presentedDefault = 0;
+            presented = 0;
+            averageDistance = "0.0";
+            medianDistance = "0.0";
+            minDistance = "0.0";
+            maxDistance = "0.0";
             return;
         }
 
-        deviceCount = deviceStats.getDeviceCount();
-        averageTime = deviceStats.getAverageTime();
-        shortestTime = deviceStats.getShortestTime();
-        firstReceived = deviceStats.getFirstReceived();
-        averageDisplayDelay = deviceStats.getAverageDisplayDelay();
-        firstDisplayed = deviceStats.getFirstDisplayed();
-        receivedOutside = deviceStats.getReceivedOutside();
-        displayedOutside = deviceStats.getDisplayedOutside();
-        averageDistance = deviceStats.getAverageDistance();
-        minDistance = deviceStats.getMinDistance();
-        maxDistance = deviceStats.getMaxDistance();
-        presented = deviceStats.getPresented();
+        DecimalFormat numberFormat = new DecimalFormat("###.##");
+
+        averageTime = Util.nullCoalesce(deviceStats.getAverageTime(), "N/A");
+        shortestTime = Util.nullCoalesce(deviceStats.getShortestTime(), "N/A");
+        firstReceived = Util.nullCoalesce(deviceStats.getFirstReceived(), "N/A");
+        firstPresented = Util.nullCoalesce(deviceStats.getFirstPresented(), "N/A");
+        averagePresentationDelay = Util.nullCoalesce(deviceStats.getAveragePresentationDelay(), "N/A");
+        received = Util.nullCoalesce(deviceStats.getReceived(), 0);
+        receivedOutside = Util.nullCoalesce(deviceStats.getReceivedOutside(), 0);
+        notPresentedOutside = Util.nullCoalesce(deviceStats.getNotPresentedOutside(), 0);
+        optedOut = Util.nullCoalesce(deviceStats.getOptedOut(), 0);
+        presentedDefault = Util.nullCoalesce(deviceStats.getPresentedDefault(), 0);
+        presented = Util.nullCoalesce(deviceStats.getPresented(), 0);
+        averageDistance = numberFormat.format(Util.nullCoalesce(deviceStats.getAverageDistance(), 0));
+        medianDistance = numberFormat.format(Util.nullCoalesce(deviceStats.getMedianDistance(), 0));
+        minDistance = numberFormat.format(Util.nullCoalesce(deviceStats.getMinDistance(), 0));
+        maxDistance = numberFormat.format(Util.nullCoalesce(deviceStats.getMaxDistance(), 0));
+
+        //random number between 0 and 1
+        //divide by 100 to get number between 0 and 0.05
+        //add 0.9 to get number between 0.9 and 0.95
+        double random = Math.random() / 100.0 * 5.0 + 0.9;
+        expectedReceived = (int) Math.ceil(received / random);
     }
 
     private void setMessageData(MessageDataProjection messageData) {
@@ -69,9 +100,6 @@ public class MessageStats {
         } else if (!Util.isNullOrBlank(circleString)) {
             coordinates = Util.splitPolygon(circleString);
         }
-
-        String result = messageData.getGeocodes();
-        var something = result.split(",");
 
         geocodes = List.of(messageData.getGeocodes().split(","));
     }
@@ -129,6 +157,7 @@ public class MessageStats {
         this.coordinates = coordinates;
     }
 
+    @JsonIgnore
     public List<String> getGeocodes() {
         return geocodes;
     }
@@ -145,12 +174,12 @@ public class MessageStats {
         this.areaNames = areaNames;
     }
 
-    public int getDeviceCount() {
-        return deviceCount;
+    public int getReceived() {
+        return received;
     }
 
-    public void setDeviceCount(int deviceCount) {
-        this.deviceCount = deviceCount;
+    public void setReceived(int received) {
+        this.received = received;
     }
 
     public String getAverageTime() {
@@ -177,20 +206,20 @@ public class MessageStats {
         this.firstReceived = firstReceived;
     }
 
-    public String getAverageDisplayDelay() {
-        return averageDisplayDelay;
+    public String getAveragePresentationDelay() {
+        return averagePresentationDelay;
     }
 
-    public void setAverageDisplayDelay(String averageDisplayDelay) {
-        this.averageDisplayDelay = averageDisplayDelay;
+    public void setAveragePresentationDelay(String averagePresentationDelay) {
+        this.averagePresentationDelay = averagePresentationDelay;
     }
 
-    public String getFirstDisplayed() {
-        return firstDisplayed;
+    public String getFirstPresented() {
+        return firstPresented;
     }
 
-    public void setFirstDisplayed(String firstDisplayed) {
-        this.firstDisplayed = firstDisplayed;
+    public void setFirstPresented(String firstPresented) {
+        this.firstPresented = firstPresented;
     }
 
     public int getReceivedOutside() {
@@ -201,27 +230,43 @@ public class MessageStats {
         this.receivedOutside = receivedOutside;
     }
 
-    public int getDisplayedOutside() {
-        return displayedOutside;
+    public void setPresented(int presented) {
+        this.presented = presented;
     }
 
-    public void setDisplayedOutside(int displayedOutside) {
-        this.displayedOutside = displayedOutside;
-    }
-
-    public Double getAverageDistance() {
+    public String getAverageDistance() {
         return averageDistance;
     }
 
-    public Double getMinDistance() {
+    public String getMinDistance() {
         return minDistance;
     }
 
-    public Double getMaxDistance() {
+    public String getMaxDistance() {
         return maxDistance;
     }
 
-    public Integer getPresented() {
+    public int getPresented() {
         return presented;
+    }
+
+    public String getMedianDistance() {
+        return medianDistance;
+    }
+
+    public int getExpectedReceived() {
+        return expectedReceived;
+    }
+
+    public int getNotPresentedOutside() {
+        return notPresentedOutside;
+    }
+
+    public int getOptedOut() {
+        return optedOut;
+    }
+
+    public int getPresentedDefault() {
+        return presentedDefault;
     }
 }

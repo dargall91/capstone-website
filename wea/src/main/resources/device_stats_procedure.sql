@@ -11,16 +11,17 @@ CREATE PROCEDURE IF NOT EXISTS GetDeviceStats(
 BEGIN
 	DECLARE offsetVal INT DEFAULT 9 * (IF(pageNum < 1, 1, pageNum) - 1);
 
-	SELECT CMACMessage.messageNumber, COUNT(*) AS deviceCount,
+	SELECT CMACMessage.messageNumber,
     CAST(SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(timeReceived, sentDateTime)))) AS TIME) AS averageTime,
     MIN(TIMEDIFF(timeReceived, sentDateTime)) AS shortestTime,
     MIN(timeReceived) AS firstReceived,
-    MIN(timeDisplayed) AS firstDisplayed,
-    CAST(SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(timeDisplayed, timeReceived)))) AS TIME) AS averageDisplayDelay,
+    MIN(timeDisplayed) AS firstPresented,
+    CAST(SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(timeDisplayed, timeReceived)))) AS TIME) AS averagePresentationDelay,
+    COUNT(*) as received,
     SUM(NOT receivedInside) AS receivedOutside,
-    SUM(NOT receivedInside AND NOT messagePresented) AS notDisplayedOutside,
+    SUM(NOT receivedInside AND NOT messagePresented) AS notPresentedOutside,
     SUM(NOT messagePresented AND optedOut) as optedOut,
-    SUM(messagePresented AND NOT locationAvailable) as displayedDefault,
+    SUM(messagePresented AND NOT locationAvailable) as presentedDefault,
     SUM(messagePresented IS TRUE) AS presented,
     (
     	SELECT AVG(distanceFromPolygon) as distance

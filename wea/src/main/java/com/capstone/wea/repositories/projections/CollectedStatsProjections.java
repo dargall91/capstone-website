@@ -2,16 +2,19 @@ package com.capstone.wea.repositories.projections;
 
 public interface CollectedStatsProjections {
     int getMessageNumber();
-    int getDeviceCount();
     String getAverageTime();
     String getShortestTime();
     String getFirstReceived();
-    String getAverageDisplayDelay();
-    String getFirstDisplayed();
-    int getReceivedOutside();
-    int getDisplayedOutside();
+    String getFirstPresented();
+    String getAveragePresentationDelay();
+    Integer getReceived();
+    Integer getReceivedOutside();
+    Integer getNotPresentedOutside();
+    Integer getOptedOut();
+    Integer getPresentedDefault();
+    Integer getPresented();
     Double getAverageDistance();
+    Double getMedianDistance();
     Double getMinDistance();
     Double getMaxDistance();
-    Integer getPresented();
 }
