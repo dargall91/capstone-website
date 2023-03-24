@@ -56,29 +56,8 @@ const Modal = () => {
         <img className="img modal-img" src={modalImage} />
 
         <div className="modal-content">
+          <div className="card-section-header">Accuracy</div>
           <div className="card-grid">
-            <Card
-              frontContentText={`Average Time`}
-              frontContentValue={averageTime === null ? "N/A" : averageTime}
-              backContent="This is some test back content"
-            ></Card>
-
-            <Card
-              frontContentText={`Lowest Response Time`}
-              frontContentValue={shortestTime === null ? "N/A" : shortestTime}
-              backContent="Lowest response time test content"
-            ></Card>
-
-            <Card
-              frontContentText={`Average Time Delay`}
-              frontContentValue={
-                averageDisplayDelay === null
-                  ? " N/A"
-                  : ` ${averageDisplayDelay}`
-              }
-              backContent="This is some back content that is supposed to be long so that is has the opportunity to show off how much space we are able to utilize for expanded explanation."
-            ></Card>
-
             <Card
               frontContentText={`Device Count`}
               frontContentValue={
@@ -104,22 +83,6 @@ const Modal = () => {
             ></Card>
 
             <Card
-              frontContentText={`First displayed time`}
-              frontContentValue={
-                firstDisplayed === null ? " N/A" : ` ${firstDisplayed}`
-              }
-              backContent="Back"
-            ></Card>
-
-            <Card
-              frontContentText={`First received time`}
-              frontContentValue={
-                firstReceived === null ? " N/A" : ` ${firstReceived}`
-              }
-              backContent="Back"
-            ></Card>
-
-            <Card
               frontContentText={`Average distance outside of Alert Area`}
               frontContentValue={
                 averageDistanceFromPolygon === null
@@ -135,6 +98,50 @@ const Modal = () => {
                 expectedDeviceCount === null
                   ? " N/A"
                   : ` ${expectedDeviceCount}`
+              }
+              backContent="Back"
+            ></Card>
+          </div>
+
+          <div className="card-section-header">Reliability</div>
+          <div className="card-grid"></div>
+
+          <div className="card-section-header">Latency</div>
+          <div className="card-grid">
+            <Card
+              frontContentText={`Average Time`}
+              frontContentValue={averageTime === null ? "N/A" : averageTime}
+              backContent="This is some test back content"
+            ></Card>
+
+            <Card
+              frontContentText={`Lowest Response Time`}
+              frontContentValue={shortestTime === null ? "N/A" : shortestTime}
+              backContent="Lowest response time test content"
+            ></Card>
+
+            <Card
+              frontContentText={`Average Time Delay`}
+              frontContentValue={
+                averageDisplayDelay === null
+                  ? " N/A"
+                  : ` ${averageDisplayDelay}`
+              }
+              backContent="This is some back content that is supposed to be long so that is has the opportunity to show off how much space we are able to utilize for expanded explanation."
+            ></Card>
+
+            <Card
+              frontContentText={`First displayed time`}
+              frontContentValue={
+                firstDisplayed === null ? " N/A" : ` ${firstDisplayed}`
+              }
+              backContent="Back"
+            ></Card>
+
+            <Card
+              frontContentText={`First received time`}
+              frontContentValue={
+                firstReceived === null ? " N/A" : ` ${firstReceived}`
               }
               backContent="Back"
             ></Card>

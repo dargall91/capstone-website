@@ -512,6 +512,7 @@ ul {
   align-items: center;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
+  margin-bottom: 15px;
 }
 
 .card {
@@ -574,6 +575,12 @@ ul {
   width: 85%;
   height: 1px;
   background: var(--black);
+}
+
+.card-section-header {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--grey-800);
 }
 
 /* Footer */
