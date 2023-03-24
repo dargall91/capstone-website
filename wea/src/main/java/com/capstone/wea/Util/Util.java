@@ -65,8 +65,6 @@ public class Util {
             coordinates.add(new Coordinate(latLong.get(0), latLong.get(1)));
         }
 
-
-
         return coordinates;
     }
 

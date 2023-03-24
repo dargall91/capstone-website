@@ -23,7 +23,7 @@ public class CollectedDeviceData {
     private boolean receivedInside;
     private boolean messagePresented;
     private boolean locationAvailable;
-    private float distanceFromPolygon;
+    private double distanceFromPolygon;
     private boolean optedOut;
 
     public Long getId() {
@@ -90,11 +90,11 @@ public class CollectedDeviceData {
         this.locationAvailable = locationAvailable;
     }
 
-    public float getDistanceFromPolygon() {
+    public double getDistanceFromPolygon() {
         return distanceFromPolygon;
     }
 
-    public void setDistanceFromPolygon(float distanceFromPolygon) {
+    public void setDistanceFromPolygon(double distanceFromPolygon) {
         this.distanceFromPolygon = distanceFromPolygon;
     }
 
