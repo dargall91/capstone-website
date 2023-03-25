@@ -227,85 +227,153 @@ ascending order
 
     {
         "messageStats": [
-            {
-                "messageNumber": "00000001",
-                "capIdentifier": "urn:oid:2.49.0.1.840.0.adfefac513d29f9238844c1527105fc371c4f955.001.1",
-                "messageType": "Update",
-                "sentDateTime": "2023-02-18 06:54:00.0",
-                "expiresDateTime": "2023-02-18 19:00:00.0",
-                "coordinates": [
-                    {
-                        "lat": "37.69",
-                        "lon": "-82.85"
-                    },
-                    {
-                        "lat": "37.78",
-                        "lon": "-82.9"
-                    },
-                    {
-                        "lat": "38.02",
-                        "lon": "-82.67"
-                    },
-                    {
-                        "lat": "37.97",
-                        "lon": "-82.57"
-                    },
-                    {
-                        "lat": "37.78",
-                        "lon": "-82.77"
-                    },
-                    {
-                        "lat": "37.74",
-                        "lon": "-82.76"
-                    },
-                    {
-                        "lat": "37.69",
-                        "lon": "-82.85"
-                    }
-                ],
-                "geocodes": [
-                    "021115"
-                ],
-                "areaNames": [
-                    "Johnson County Kentucky"
-                ],
-                "deviceCount": 0,
-                "averageTime": null,
-                "shortestTime": null,
-                "firstReceived": null,
-                "averageDisplayDelay": null,
-                "firstDisplayed": null,
-                "receivedOutside": 0,
-                "displayedOutside": 0
-            }
-        ],
+		{
+			"messageNumber": "0000000C",
+			"capIdentifier": "urn:oid:2.49.0.1.840.0.6f50c3a937ba04fa681c49f24e7404819037f1cd.001.1",
+			"messageType": "Alert",
+			"sentDateTime": "2023-02-18 02:09:00.0",
+			"expiresDateTime": "2023-02-18 13:00:00.0",
+			"coordinates": [
+				{
+					"lat": "44.24",
+					"lon": "-107.79"
+				},
+				{
+					"lat": "44.25",
+					"lon": "-107.85"
+				},
+				{
+					"lat": "44.26",
+					"lon": "-107.87"
+				},
+				{
+					"lat": "44.25",
+					"lon": "-107.98"
+				},
+				{
+					"lat": "44.27",
+					"lon": "-108.0"
+				},
+				{
+					"lat": "44.32",
+					"lon": "-108.03"
+				},
+				{
+					"lat": "44.51",
+					"lon": "-108.07"
+				},
+				{
+					"lat": "44.52",
+					"lon": "-108.06"
+				},
+				{
+					"lat": "44.48",
+					"lon": "-108.05"
+				},
+				{
+					"lat": "44.47",
+					"lon": "-108.05"
+				},
+				{
+					"lat": "44.45",
+					"lon": "-108.03"
+				},
+				{
+					"lat": "44.43",
+					"lon": "-108.04"
+				},
+				{
+					"lat": "44.29",
+					"lon": "-107.99"
+				},
+				{
+					"lat": "44.27",
+					"lon": "-107.95"
+				},
+				{
+					"lat": "44.27",
+					"lon": "-107.89"
+				},
+				{
+					"lat": "44.27",
+					"lon": "-107.87"
+				},
+				{
+					"lat": "44.25",
+					"lon": "-107.78"
+				},
+				{
+					"lat": "44.17",
+					"lon": "-107.69"
+				},
+				{
+					"lat": "44.17",
+					"lon": "-107.71"
+				},
+				{
+					"lat": "44.24",
+					"lon": "-107.79"
+				}
+			],
+			"areaNames": [
+				"Gilliam County Oregon",
+				"Morrow County Oregon",
+				"Umatilla County Oregon",
+				"Wheeler County Oregon",
+				"Klickitat County Washington",
+				"Yakima County Washington"
+			],
+			"received": 4,
+			"expectedReceived": 5,
+			"averageTime": "00:01:00",
+			"shortestTime": "00:01:00",
+			"firstReceived": "2023-02-18 02:10:00.0",
+			"averagePresentationDelay": "00:00:09",
+			"firstPresented": "2023-02-18 02:10:09.0",
+			"receivedOutside": 1,
+			"averageDistance": "6.67",
+			"minDistance": "1",
+			"maxDistance": "10",
+			"medianDistance": "5.0",
+			"presented": 3,
+            "notPresentedOutside": 0,
+            "optedOut": 1,
+            "presentedDefault": 2
+		},
         "commonName": "National Weather Service",
         "prev": false,
         "next": false
     }
 
 #### Json Response Key Definitions
-| JSON Key              | Definition                                                                                                        |
-|-----------------------|-------------------------------------------------------------------------------------------------------------------|
-| messageStats          | an array of JSON objects that contain the collected stats for a cmac message                                      |
-| messageNumber         | The CMAC_message_number of the message                                                                            |
-| capIdentifier         | The CMAC_cap_identifier of the message                                                                            |
-| messageType           | The CMAC_message_type oof the alert                                                                               |
-| sentDateTime          | The CMAC_sent_date_time of the alert                                                                              |
-| expiresDateTime       | The CMAC_expires_date_time of the alert                                                                           |
-| averageTime           | the average time between when the message was sent and all devices received it                                    |
-| shortestTime          | the shortest time between when the message was sent and all devices received it                                   |
-| firsReceived          | the datetime that the first device to receive the message received it                                             |
-| averageDisplayDelay   | the average delay between when all devices received the message and when the alert was displayed on the device    |
-| firstDisplayed        | the datetime when the first device to display a message displayed it                                              |
-| deviceCount           | the number of devices that received the message                                                                   |
-| receivedOutsideCount  | the number of devices that received the message outside of the target area                                        |
-| displayedOutsideCount | the average devices for which the alert was displayed on that device outside the target area                      |
-| coordinates           | an array of coordinates that comprise this messages polygon; if the message has no polygon this item will be null |
-| lat                   | the latitude of the polygon coordinate                                                                            |
-| lon                   | the longitude of the polygon coordinate                                                                           |
-| geocodes              | the list of geocodes targeted by the message                                                                      |
-| areaNames             | the list of areas by name that corresponds to each geocode in the list                                            |
-| commonName            | the common name of the AO of these messages                                                                       |
-| prev                  | a boolean value that represents if there is a previous page of results; this is always true if page > 1           |
-| next                  | a boolean value that represents if there is an additional page of results after this one                          |
+| JSON Key                 | Definition                                                                                                                                                               |
+|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| messageStats             | an array of JSON objects that contain the collected stats for a cmac message                                                                                             |
+| messageNumber            | The CMAC_message_number of the message                                                                                                                                   |
+| capIdentifier            | The CMAC_cap_identifier of the message                                                                                                                                   |
+| messageType              | The CMAC_message_type oof the alert                                                                                                                                      |
+| sentDateTime             | The CMAC_sent_date_time of the alert                                                                                                                                     |
+| expiresDateTime          | The CMAC_expires_date_time of the alert                                                                                                                                  |
+| averageTime              | The average time between when the message was issued and all devices received it                                                                                         |
+| shortestTime             | the shortest time between when the message was issued and all devices received it                                                                                        |
+| firstReceived            | The date and time when the first device to receive the message received it                                                                                               |
+| averagePresentationDelay | The average time lapse between when all devices received the message and when the alert was presented on the device (excluding devices that did not receive the message) |
+| firstPresented           | The date and time when the first device to display the message presented it                                                                                              |
+| received                 | The number of devices that received the message                                                                                                                          |
+| expectedReceived         | The number of devices that were expected to receive the message                                                                                                          |
+| receivedOutside          | The number of devices that received the message outside of the target area                                                                                               |
+| presented                | The number of devices presented the message                                                                                                                              |
+| notPresentedOutside      | The number of devices that received the message outside of the target area but did not present it                                                                        |
+| presentedDefault         | The number of devices that received the message and presented it by default for any reason (ex: device location not enabled)                                             |
+| optedOut                 | The number of devices that received the message did not display it because the used opted out of that type of message                                                    |
+| averageDistance          | The average distance outside of the target area for all devices that received the message outside the target area                                                        |
+| medianDistance           | The median distance outside of the target area for all devices that received the message outside the target area                                                         |
+| minDistance              | The minimum distance outside of the target area for all devices that received the message outside the target area                                                        |
+| maxDistance              | The maximum distance outside of the target area for all devices that received the message outside the target area                                                        |
+| coordinates              | an array of coordinates that comprise this messages polygon; if the message has no polygon this item will be null                                                        |
+| lat                      | the latitude of the polygon coordinate                                                                                                                                   |
+| lon                      | the longitude of the polygon coordinate                                                                                                                                  |
+| areaNames                | the list of areas by name that corresponds to each geocode in the list                                                                                                   |
+| commonName               | the common name of the AO of these messages                                                                                                                              |
+| prev                     | a boolean value that represents if there is a previous page of results; this is always true if page > 1                                                                  |
+| next                     | a boolean value that represents if there is an additional page of results after this one                                                                                 |

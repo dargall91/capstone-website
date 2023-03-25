@@ -2,6 +2,7 @@ package com.capstone.wea.entities;
 
 import com.capstone.wea.model.cap.CAPMessageModel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
@@ -11,17 +12,19 @@ import java.time.ZoneOffset;
 
 @Entity
 @JacksonXmlRootElement(localName = "CMAC_Alert_Attributes")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CMACMessage {
     @Id
     @JsonIgnore
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer messageNumber;
-    @JsonProperty("Cmac_cap_identifier")
+    @JsonProperty("CMAC_cap_identifier")
     @Column(length = Integer.MAX_VALUE)
     private String capIdentifier;
     @JsonProperty("CMAC_sender")
     private String sender;
     @JsonProperty("CMAC_sent_date_time")
+    @Column(columnDefinition = "DATETIME")
     private OffsetDateTime sentDateTime;
     @JsonProperty("CMAC_status")
     private String status;
@@ -30,8 +33,10 @@ public class CMACMessage {
     @JsonProperty("CMAC_cap_alert_uri")
     private String alertUri;
     @JsonProperty("CMAC_cap_sent_date_time")
+    @Column(columnDefinition = "DATETIME")
     private OffsetDateTime capSentDateTime;
     @JsonIgnore
+    @Column(columnDefinition = "DATETIME")
     private OffsetDateTime expires;
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="messageNumber")
@@ -103,5 +108,9 @@ public class CMACMessage {
 
     public void setAlertInfo(CMACAlertInfo alertInfo) {
         this.alertInfo = alertInfo;
+    }
+
+    public void setExpires(OffsetDateTime expires) {
+        this.expires = expires;
     }
 }

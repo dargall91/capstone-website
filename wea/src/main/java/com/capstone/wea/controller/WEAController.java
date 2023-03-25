@@ -3,10 +3,12 @@ package com.capstone.wea.controller;
 import com.capstone.wea.Util.IPAWSInterface;
 import com.capstone.wea.Util.Util;
 import com.capstone.wea.entities.CMACMessage;
+import com.capstone.wea.entities.CollectedDeviceData;
 import com.capstone.wea.entities.Geocode;
 import com.capstone.wea.model.MessageStats;
 import com.capstone.wea.model.cap.IPAWSMessageList;
 
+import com.capstone.wea.parser.XMLParser;
 import com.capstone.wea.repositories.GeocodeRepository;
 import com.capstone.wea.repositories.projections.MessageDataProjection;
 import com.capstone.wea.repositories.projections.CollectedStatsProjections;
@@ -119,7 +121,7 @@ public class WEAController {
      */
 //    @PutMapping(value = "upload")
     @PostMapping(value = "upload")
-    public ResponseEntity<String> upload(@RequestBody com.capstone.wea.entities.CollectedDeviceData userData) {
+    public ResponseEntity<String> upload(@RequestBody CollectedDeviceData userData) {
         userData = deviceRepository.save(userData);
 
         URI location = ServletUriComponentsBuilder
@@ -185,6 +187,7 @@ public class WEAController {
 
         //page cannot be zero or negative
         page = page < 1 ? 1 : page;
+        int offsetVal = 9 * (page - 1);
 
         //default sort order is date -- used if not provided, or not valid
         boolean orderByDate = Util.isNullOrBlank(sortBy) || !sortBy.equalsIgnoreCase("number");
@@ -200,7 +203,7 @@ public class WEAController {
 
         List<MessageDataProjection> messageData = messageRepository.getMessageData(sender, page,
                 Util.isNullOrBlank(messageNumber) ? null : Integer.parseInt(messageNumber, 16), messageType,
-                fromDate, toDate, orderByDate, orderByDesc);
+                fromDate, toDate, orderByDate, orderByDesc, offsetVal);
 
         for (int i = 0, j = 0; i < messageData.size() && i < 9; i++) {
             if (deviceStats.size() > j && deviceStats.get(j).getMessageNumber() == messageData.get(i).getMessageNumber()) {
@@ -254,5 +257,24 @@ public class WEAController {
         }
 
         return ResponseEntity.ok(message.get());
+    }
+
+    /**
+     * Endpoint for testing the polygon smoothing algorithm. Hitting this endpoint will parse the test message, smooth
+     * the polygon, and insert it into the database. The message will not expire for 12 hours, allowing for ample
+     * test the message via android and view the results in the website
+     * @return
+     */
+    @GetMapping("polygonSmoothingMessage")
+    public ResponseEntity<?> parsePolygonSmoothingMessage() {
+        CMACMessage polgyonSmoothingMessage = XMLParser.parsePolygonSmoothingMessage();
+
+        String polygon = polgyonSmoothingMessage.getAlertInfo().getAlertAreaList().get(0).getPolygon();
+        polygon = Util.smoothPolygon(polygon);
+        polgyonSmoothingMessage.getAlertInfo().getAlertAreaList().get(0).setPolygon(polygon);
+
+        CMACMessage result = messageRepository.save(polgyonSmoothingMessage);
+
+        return ResponseEntity.ok(result);
     }
 }
