@@ -26,19 +26,25 @@ const Modal = () => {
   const { selectedAlert, closeModal, modalImage } = useAlertContext();
 
   const {
+    messageNumber,
     sentDateTime,
     expiresDateTime,
-    messageNumber,
     averageTime,
     shortestTime,
-    averageDisplayDelay,
-    deviceCount,
-    receivedOutside,
-    displayedOutside,
-    firstDisplayed,
     firstReceived,
-    averageDistanceFromPolygon,
-    expectedDeviceCount,
+    averagePresentationDelay,
+    firstPresented,
+    received,
+    expectedReceived,
+    receivedOutside,
+    presented,
+    notPresentedOutside,
+    presentedDefault,
+    optedOut,
+    averageDistance,
+    medianDistance,
+    minDistance,
+    maxDistance,
   } = selectedAlert[0];
 
   const handleClick = (e) => {
@@ -59,83 +65,105 @@ const Modal = () => {
           <div className="card-section-header">Accuracy</div>
           <div className="card-grid">
             <Card
-              frontContentText={`Device Count`}
+              frontContentText={`Average Distance`}
               frontContentValue={
-                deviceCount === null ? " N/A" : ` ${deviceCount}`
+                averageDistance === null ? " N/A" : ` ${averageDistance}`
               }
-              backContent="Back"
+              backContent="The average distance outside of the target area for all devices that received the message outside the target area"
             ></Card>
 
             <Card
-              frontContentText={`Total devices received outside area`}
+              frontContentText={`Median Distance`}
               frontContentValue={
-                receivedOutside === null ? " N/A" : ` ${receivedOutside}`
+                medianDistance === null ? " N/A" : ` ${medianDistance}`
               }
-              backContent="Back"
+              backContent="The median distance outside of the target area for all devices that received the message outside the target area"
             ></Card>
 
             <Card
-              frontContentText={`Total devices displayed outside area`}
+              frontContentText={`Min Distance`}
               frontContentValue={
-                displayedOutside === null ? " N/A" : ` ${displayedOutside}`
+                minDistance === null ? " N/A" : ` ${minDistance}`
               }
-              backContent="Back"
+              backContent="The minimum distance outside of the target area for all devices that received the message outside the target area"
             ></Card>
 
             <Card
-              frontContentText={`Average distance outside of Alert Area`}
+              frontContentText={`Max Distance`}
               frontContentValue={
-                averageDistanceFromPolygon === null
-                  ? " N/A"
-                  : ` ${averageDistanceFromPolygon}`
+                maxDistance === null ? " N/A" : ` ${maxDistance}`
               }
-              backContent="Back"
-            ></Card>
-
-            <Card
-              frontContentText={`Expected total device count`}
-              frontContentValue={
-                expectedDeviceCount === null
-                  ? " N/A"
-                  : ` ${expectedDeviceCount}`
-              }
-              backContent="Back"
+              backContent="The maximum distance outside of the target area for all devices that received the message outside the target area"
             ></Card>
           </div>
 
           <div className="card-section-header">Reliability</div>
-          <div className="card-grid"></div>
+          <div className="card-grid">
+            <Card
+              frontContentText={`Expected Total Devices Receieved`}
+              frontContentValue={
+                expectedReceived === null ? " N/A" : ` ${expectedReceived}`
+              }
+              backContent="The number of devices that were expected to receive the message"
+            ></Card>
+
+            <Card
+              frontContentText={`Actual Total Devices Receieved`}
+              frontContentValue={received === null ? " N/A" : ` ${received}`}
+              backContent="The number of devices that received the message"
+            ></Card>
+
+            <Card
+              frontContentText={`Received Outside`}
+              frontContentValue={
+                receivedOutside === null ? " N/A" : ` ${receivedOutside}`
+              }
+              backContent="The number of devices that received the message outside of the target area"
+            ></Card>
+
+            <Card
+              frontContentText={`Received Outside but Not Presented`}
+              frontContentValue={
+                notPresentedOutside === null
+                  ? " N/A"
+                  : ` ${notPresentedOutside}`
+              }
+              backContent="The number of devices that received the message outside of the target area but did not present it"
+            ></Card>
+
+            <Card
+              frontContentText={`Total Presentations`}
+              frontContentValue={presented === null ? " N/A" : ` ${presented}`}
+              backContent="The number of devices that presented the message"
+            ></Card>
+
+            <Card
+              frontContentText={`Default Presentation`}
+              frontContentValue={
+                presentedDefault === null ? " N/A" : ` ${presentedDefault}`
+              }
+              backContent="The number of devices that received the message and presented it by default for any reason (ex: device location not enabled)"
+            ></Card>
+
+            <Card
+              frontContentText={`Opt Outs`}
+              frontContentValue={optedOut === null ? " N/A" : ` ${optedOut}`}
+              backContent="The number of devices that received the message but did not display it because the user opted out of that type of message"
+            ></Card>
+          </div>
 
           <div className="card-section-header">Latency</div>
           <div className="card-grid">
             <Card
               frontContentText={`Average Time`}
               frontContentValue={averageTime === null ? "N/A" : averageTime}
-              backContent="This is some test back content"
+              backContent="The average time between when the message was issued and all devices received it"
             ></Card>
 
             <Card
-              frontContentText={`Lowest Response Time`}
+              frontContentText={`All Device Received Time`}
               frontContentValue={shortestTime === null ? "N/A" : shortestTime}
-              backContent="Lowest response time test content"
-            ></Card>
-
-            <Card
-              frontContentText={`Average Time Delay`}
-              frontContentValue={
-                averageDisplayDelay === null
-                  ? " N/A"
-                  : ` ${averageDisplayDelay}`
-              }
-              backContent="This is some back content that is supposed to be long so that is has the opportunity to show off how much space we are able to utilize for expanded explanation."
-            ></Card>
-
-            <Card
-              frontContentText={`First displayed time`}
-              frontContentValue={
-                firstDisplayed === null ? " N/A" : ` ${firstDisplayed}`
-              }
-              backContent="Back"
+              backContent="The shortest time between when the message was issued and all devices received it"
             ></Card>
 
             <Card
@@ -143,7 +171,25 @@ const Modal = () => {
               frontContentValue={
                 firstReceived === null ? " N/A" : ` ${firstReceived}`
               }
-              backContent="Back"
+              backContent="The date and time when the first device to receive the message received it"
+            ></Card>
+
+            <Card
+              frontContentText={`Average Presentation Delay`}
+              frontContentValue={
+                averagePresentationDelay === null
+                  ? " N/A"
+                  : ` ${averagePresentationDelay}`
+              }
+              backContent="The average time lapse between when all devices received the message and when the alert was presented on the device (excluding devices that did not receive the message)"
+            ></Card>
+
+            <Card
+              frontContentText={`First Presentation`}
+              frontContentValue={
+                firstPresented === null ? " N/A" : ` ${firstPresented}`
+              }
+              backContent="The date and time when the first device to display the message presented it"
             ></Card>
           </div>
         </div>
