@@ -6,11 +6,10 @@ CREATE PROCEDURE IF NOT EXISTS GetMessageData(
     fromDate VARCHAR(10),
     toDate VARCHAR(10),
     orderByDate BIT,
-    orderByDesc BIT,
-    offsetVal INT
+    orderByDesc BIT
 )
 BEGIN
-	SET GLOBAL group_concat_max_len = 10000;
+	DECLARE offsetVal INT DEFAULT 9 * (IF(pageNum < 1, 1, pageNum) - 1);
 
     SELECT Coordinates.messageNumber, sentDateTime, expires, Coordinates.messageType, capIdentifier, polygon, circle,
     geocodes

@@ -16,8 +16,8 @@ public interface MessageRepository extends JpaRepository<CMACMessage, Integer> {
     CMACMessage findByCapIdentifier(String capIdentifier);
     CMACMessage findFirstBySender(String sender);
     @Query(nativeQuery = true, value = "call GetMessageData(:sender, :pageNum, :messageNumber, :messageType, " +
-            ":fromDate, :toDate, :orderByDate, :orderByDesc, :offsetVal)")
+            ":fromDate, :toDate, :orderByDate, :orderByDesc)")
     List<MessageDataProjection> getMessageData(String sender, int pageNum, Integer messageNumber,
                                                String messageType, String fromDate, String toDate,
-                                               boolean orderByDate, boolean orderByDesc, int offsetVal);
+                                               boolean orderByDate, boolean orderByDesc);
 }

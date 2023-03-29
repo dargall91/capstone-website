@@ -10,4 +10,8 @@ export default defineConfig({
     open: "/index.html",
     port: 3000,
   },
+  test: {
+    globals: true,
+    environment: "jsdom",
+  },
 });

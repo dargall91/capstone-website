@@ -203,7 +203,7 @@ public class WEAController {
 
         List<MessageDataProjection> messageData = messageRepository.getMessageData(sender, page,
                 Util.isNullOrBlank(messageNumber) ? null : Integer.parseInt(messageNumber, 16), messageType,
-                fromDate, toDate, orderByDate, orderByDesc, offsetVal);
+                fromDate, toDate, orderByDate, orderByDesc);
 
         for (int i = 0, j = 0; i < messageData.size() && i < 9; i++) {
             if (deviceStats.size() > j && deviceStats.get(j).getMessageNumber() == messageData.get(i).getMessageNumber()) {
