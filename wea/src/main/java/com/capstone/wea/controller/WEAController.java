@@ -32,6 +32,7 @@ import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RequestMapping("/wea/api/")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -204,13 +205,16 @@ public class WEAController {
 
         List<MessageStats> messageStatsList = new ArrayList<>();
 
-        List<CollectedStatsProjections> deviceStats = deviceRepository.getDeviceStats(sender, page,
-                Util.isNullOrBlank(messageNumber) ? null : Integer.parseInt(messageNumber, 16), messageType,
-                fromDate, toDate, orderByDate, orderByDesc);
-
         List<MessageDataProjection> messageData = messageRepository.getMessageData(sender, page,
                 Util.isNullOrBlank(messageNumber) ? null : Integer.parseInt(messageNumber, 16), messageType,
                 fromDate, toDate, orderByDate, orderByDesc);
+
+        var messageNumberList = messageData.stream()
+                .map(e -> Integer.toString(e.getMessageNumber()))
+                .collect(Collectors.joining(","));
+
+        List<CollectedStatsProjections> deviceStats = deviceRepository.getDeviceStats(sender,
+                messageNumberList, messageType, fromDate, toDate, orderByDate, orderByDesc);
 
         for (int i = 0, j = 0; i < messageData.size() && i < 9; i++) {
             if (deviceStats.size() > j && deviceStats.get(j).getMessageNumber() == messageData.get(i).getMessageNumber()) {

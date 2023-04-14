@@ -69,7 +69,7 @@ const Modal = () => {
               frontContentValue={
                 averageDistance === null ? " N/A" : ` ${averageDistance}`
               }
-              backContent="The average distance outside of the target area for all devices that received the message outside the target area"
+              backContent="The average distance outside of the target area for all devices that received the message outside the target area in miles"
             ></Card>
 
             <Card
@@ -77,7 +77,7 @@ const Modal = () => {
               frontContentValue={
                 medianDistance === null ? " N/A" : ` ${medianDistance}`
               }
-              backContent="The median distance outside of the target area for all devices that received the message outside the target area"
+              backContent="The median distance outside of the target area for all devices that received the message outside the target area in miles"
             ></Card>
 
             <Card
@@ -85,7 +85,7 @@ const Modal = () => {
               frontContentValue={
                 minDistance === null ? " N/A" : ` ${minDistance}`
               }
-              backContent="The minimum distance outside of the target area for all devices that received the message outside the target area"
+              backContent="The minimum distance outside of the target area for all devices that received the message outside the target area in miles"
             ></Card>
 
             <Card
@@ -93,14 +93,14 @@ const Modal = () => {
               frontContentValue={
                 maxDistance === null ? " N/A" : ` ${maxDistance}`
               }
-              backContent="The maximum distance outside of the target area for all devices that received the message outside the target area"
+              backContent="The maximum distance outside of the target area for all devices that received the message outside the target area in miles"
             ></Card>
           </div>
 
           <div className="card-section-header">Reliability</div>
           <div className="card-grid">
             <Card
-              frontContentText={`Expected Total Devices Receieved`}
+              frontContentText={`Expected Total Devices Received`}
               frontContentValue={
                 expectedReceived === null ? " N/A" : ` ${expectedReceived}`
               }
@@ -108,7 +108,7 @@ const Modal = () => {
             ></Card>
 
             <Card
-              frontContentText={`Actual Total Devices Receieved`}
+              frontContentText={`Actual Total Devices Received`}
               frontContentValue={received === null ? " N/A" : ` ${received}`}
               backContent="The number of devices that received the message"
             ></Card>

@@ -8,9 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface DeviceRepository extends JpaRepository<CollectedDeviceData, Long> {
-    @Query(nativeQuery = true, value = "call GetDeviceStats(:sender, :pageNum, :messageNumber, :messageType, " +
+    @Query(nativeQuery = true, value = "call GetDeviceStats(:sender, :messageNumberList, :messageType, " +
             ":fromDate, :toDate, :orderByDate, :orderByDesc)")
-    List<CollectedStatsProjections> getDeviceStats(String sender, int pageNum, Integer messageNumber,
+    List<CollectedStatsProjections> getDeviceStats(String sender, String messageNumberList,
                                                    String messageType, String fromDate, String toDate,
                                                    boolean orderByDate, boolean orderByDesc);
 }
