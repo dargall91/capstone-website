@@ -6,6 +6,10 @@ Node version 16+ is required for the application to run.
 
 (If a previous version of the application was run with create react app, please delete your node_modules folder and do a fresh npm install)
 
+## Important
+
+Please see the 'Database Setup' and 'Starting the Server' sections in wea/README.md before continuing
+
 ## Available Scripts
 
 In the project directory, you can run:
@@ -29,6 +33,12 @@ The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
 See the section about [deployment](https://vitejs.dev/guide/build.html#building-for-production) for more information.
+
+## General Instructions
+
+To view the running project, start the server in the /wea folder, and in this folder, run npm start.
+
+When prompted to login, paste the user w-nws.webmaster@noaa.gov to gain access to the alerts being tracked from the National Weather Service.
 
 ## Learn More
 
