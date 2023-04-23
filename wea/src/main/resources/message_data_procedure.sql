@@ -6,11 +6,10 @@ CREATE PROCEDURE IF NOT EXISTS GetMessageData(
     fromDate VARCHAR(10),
     toDate VARCHAR(10),
     orderByDate BIT,
-    orderByDesc BIT,
-    offsetVal INT
+    orderByDesc BIT
 )
 BEGIN
-	SET GLOBAL group_concat_max_len = 10000;
+	DECLARE offsetVal INT DEFAULT 9 * (IF(pageNum < 1, 1, pageNum) - 1);
 
     SELECT Coordinates.messageNumber, sentDateTime, expires, Coordinates.messageType, capIdentifier, polygon, circle,
     geocodes
@@ -23,7 +22,7 @@ BEGIN
 		AND CMACMessage.messageNumber = IFNULL(messageNumber, CMACMessage.messageNumber)
 		AND CMACMessage.messageType = IFNULL(messageType, CMACMessage.messageType)
 		AND sentDateTime >= IFNULL(fromDate, DATE("2016-01-01"))
-		AND sentDateTime < DATE_ADD(IFNULL(toDate, CURDATE()), INTERVAL 1 DAY)
+		AND sentDateTime < DATE_ADD(IFNULL(toDate, UTC_DATE()), INTERVAL 1 DAY)
 		GROUP BY CMACMessage.messageNumber
 		ORDER BY
 			CASE WHEN NOT orderByDate AND NOT orderByDesc THEN CMACMessage.messageNumber END ASC,

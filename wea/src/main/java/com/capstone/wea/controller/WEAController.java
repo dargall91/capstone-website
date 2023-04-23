@@ -32,6 +32,7 @@ import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RequestMapping("/wea/api/")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -91,11 +92,19 @@ public class WEAController {
                         continue;
                     }
 
+                    //running out of time for the project and still need to add coastal geocodes then implement a way
+                    //for message stats endpoint to distinguish between coastal and non-coastal so it knows to use the
+                    //coordinates instead of area names. polygons seem more important to the nature of this project
+                    //(can't collect accuracy metrics without them, for example), so instead I'm just goin gto skip
+                    //messages that don't have a polygon
                     CMACMessage message = new CMACMessage(ipawsResult.getAlertList().get(i));
-                    messageRepository.save(message);
+                    String messagePolygon = message.getAlertInfo().getAlertAreaList().get(0).getPolygon();
+                    if (!Util.isNullOrBlank(messagePolygon)) {
+                        messageRepository.save(message);
 
-                    if (i == 0) {
-                        oldestMessage = message;
+                        if (oldestMessage == null) {
+                            oldestMessage = message;
+                        }
                     }
                 }
                 if (oldestMessage != null) {
@@ -187,7 +196,6 @@ public class WEAController {
 
         //page cannot be zero or negative
         page = page < 1 ? 1 : page;
-        int offsetVal = 9 * (page - 1);
 
         //default sort order is date -- used if not provided, or not valid
         boolean orderByDate = Util.isNullOrBlank(sortBy) || !sortBy.equalsIgnoreCase("number");
@@ -197,13 +205,16 @@ public class WEAController {
 
         List<MessageStats> messageStatsList = new ArrayList<>();
 
-        List<CollectedStatsProjections> deviceStats = deviceRepository.getDeviceStats(sender, page,
+        List<MessageDataProjection> messageData = messageRepository.getMessageData(sender, page,
                 Util.isNullOrBlank(messageNumber) ? null : Integer.parseInt(messageNumber, 16), messageType,
                 fromDate, toDate, orderByDate, orderByDesc);
 
-        List<MessageDataProjection> messageData = messageRepository.getMessageData(sender, page,
-                Util.isNullOrBlank(messageNumber) ? null : Integer.parseInt(messageNumber, 16), messageType,
-                fromDate, toDate, orderByDate, orderByDesc, offsetVal);
+        var messageNumberList = messageData.stream()
+                .map(e -> Integer.toString(e.getMessageNumber()))
+                .collect(Collectors.joining(","));
+
+        List<CollectedStatsProjections> deviceStats = deviceRepository.getDeviceStats(sender,
+                messageNumberList, messageType, fromDate, toDate, orderByDate, orderByDesc);
 
         for (int i = 0, j = 0; i < messageData.size() && i < 9; i++) {
             if (deviceStats.size() > j && deviceStats.get(j).getMessageNumber() == messageData.get(i).getMessageNumber()) {
@@ -231,7 +242,6 @@ public class WEAController {
             }
         }
 
-        //TODO: deviceCount should be 90-95% of number that should have been hit
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode root = mapper.createObjectNode();
         root.set("messageStats", mapper.valueToTree(messageStatsList));
@@ -267,6 +277,8 @@ public class WEAController {
      */
     @GetMapping("polygonSmoothingMessage")
     public ResponseEntity<?> parsePolygonSmoothingMessage() {
+        CMACMessage polgyonSmoothingMessage2 = XMLParser.parsePolygonSmoothingMessage();
+        messageRepository.save(polgyonSmoothingMessage2);
         CMACMessage polgyonSmoothingMessage = XMLParser.parsePolygonSmoothingMessage();
 
         String polygon = polgyonSmoothingMessage.getAlertInfo().getAlertAreaList().get(0).getPolygon();
