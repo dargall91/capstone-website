@@ -31,6 +31,7 @@ public class CMACAlertInfo {
     @JsonProperty("CMAC_certainty")
     private String certainty;
     @JsonProperty("CMAC_expires_date_time")
+    @Column(columnDefinition = "DATETIME")
     private OffsetDateTime expires;
     @JsonProperty("CMAC_sender_name")
     @Column(length = 200)

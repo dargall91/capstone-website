@@ -36,9 +36,9 @@ manifest {
 }
 
 tasks.register('prod') {
-	bootRun {
-		args = ["--spring.profiles.active=prod"]
-	}
+	// bootRun {
+	// 	args = ["--spring.profiles.active=prod"]
+	// }
 }
 
 prod.configure {finalizedBy(bootRun)}

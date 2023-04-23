@@ -22,7 +22,7 @@ BEGIN
 		AND CMACMessage.messageNumber = IFNULL(messageNumber, CMACMessage.messageNumber)
 		AND CMACMessage.messageType = IFNULL(messageType, CMACMessage.messageType)
 		AND sentDateTime >= IFNULL(fromDate, DATE("2016-01-01"))
-		AND sentDateTime < DATE_ADD(IFNULL(toDate, CURDATE()), INTERVAL 1 DAY)
+		AND sentDateTime < DATE_ADD(IFNULL(toDate, UTC_DATE()), INTERVAL 1 DAY)
 		GROUP BY CMACMessage.messageNumber
 		ORDER BY
 			CASE WHEN NOT orderByDate AND NOT orderByDesc THEN CMACMessage.messageNumber END ASC,
@@ -32,7 +32,7 @@ BEGIN
 		LIMIT 10 OFFSET offsetVal
 	) as Coordinates
     JOIN (
-		SELECT group_concat(geocodeList) AS geocodes, CMACAlertArea_alertAreaId
+		SELECT group_concat(DISTINCT geocodeList) AS geocodes, CMACAlertArea_alertAreaId
 		FROM CMACCmasGeocode
 		WHERE CMACCmasGeocode.CMACAlertArea_alertAreaId = IFNULL(messageNumber, CMACCmasGeocode.CMACAlertArea_alertAreaId)
 		GROUP BY CMACAlertArea_alertAreaId

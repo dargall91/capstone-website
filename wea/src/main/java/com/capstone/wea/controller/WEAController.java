@@ -3,10 +3,12 @@ package com.capstone.wea.controller;
 import com.capstone.wea.Util.IPAWSInterface;
 import com.capstone.wea.Util.Util;
 import com.capstone.wea.entities.CMACMessage;
+import com.capstone.wea.entities.CollectedDeviceData;
 import com.capstone.wea.entities.Geocode;
 import com.capstone.wea.model.MessageStats;
 import com.capstone.wea.model.cap.IPAWSMessageList;
 
+import com.capstone.wea.parser.XMLParser;
 import com.capstone.wea.repositories.GeocodeRepository;
 import com.capstone.wea.repositories.projections.MessageDataProjection;
 import com.capstone.wea.repositories.projections.CollectedStatsProjections;
@@ -30,6 +32,7 @@ import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RequestMapping("/wea/api/")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -89,11 +92,19 @@ public class WEAController {
                         continue;
                     }
 
+                    //running out of time for the project and still need to add coastal geocodes then implement a way
+                    //for message stats endpoint to distinguish between coastal and non-coastal so it knows to use the
+                    //coordinates instead of area names. polygons seem more important to the nature of this project
+                    //(can't collect accuracy metrics without them, for example), so instead I'm just goin gto skip
+                    //messages that don't have a polygon
                     CMACMessage message = new CMACMessage(ipawsResult.getAlertList().get(i));
-                    messageRepository.save(message);
+                    String messagePolygon = message.getAlertInfo().getAlertAreaList().get(0).getPolygon();
+                    if (!Util.isNullOrBlank(messagePolygon)) {
+                        messageRepository.save(message);
 
-                    if (i == 0) {
-                        oldestMessage = message;
+                        if (oldestMessage == null) {
+                            oldestMessage = message;
+                        }
                     }
                 }
                 if (oldestMessage != null) {
@@ -119,7 +130,7 @@ public class WEAController {
      */
 //    @PutMapping(value = "upload")
     @PostMapping(value = "upload")
-    public ResponseEntity<String> upload(@RequestBody com.capstone.wea.entities.CollectedDeviceData userData) {
+    public ResponseEntity<String> upload(@RequestBody CollectedDeviceData userData) {
         userData = deviceRepository.save(userData);
 
         URI location = ServletUriComponentsBuilder
@@ -194,13 +205,16 @@ public class WEAController {
 
         List<MessageStats> messageStatsList = new ArrayList<>();
 
-        List<CollectedStatsProjections> deviceStats = deviceRepository.getDeviceStats(sender, page,
-                Util.isNullOrBlank(messageNumber) ? null : Integer.parseInt(messageNumber, 16), messageType,
-                fromDate, toDate, orderByDate, orderByDesc);
-
         List<MessageDataProjection> messageData = messageRepository.getMessageData(sender, page,
                 Util.isNullOrBlank(messageNumber) ? null : Integer.parseInt(messageNumber, 16), messageType,
                 fromDate, toDate, orderByDate, orderByDesc);
+
+        var messageNumberList = messageData.stream()
+                .map(e -> Integer.toString(e.getMessageNumber()))
+                .collect(Collectors.joining(","));
+
+        List<CollectedStatsProjections> deviceStats = deviceRepository.getDeviceStats(sender,
+                messageNumberList, messageType, fromDate, toDate, orderByDate, orderByDesc);
 
         for (int i = 0, j = 0; i < messageData.size() && i < 9; i++) {
             if (deviceStats.size() > j && deviceStats.get(j).getMessageNumber() == messageData.get(i).getMessageNumber()) {
@@ -228,7 +242,6 @@ public class WEAController {
             }
         }
 
-        //TODO: deviceCount should be 90-95% of number that should have been hit
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode root = mapper.createObjectNode();
         root.set("messageStats", mapper.valueToTree(messageStatsList));
@@ -254,5 +267,26 @@ public class WEAController {
         }
 
         return ResponseEntity.ok(message.get());
+    }
+
+    /**
+     * Endpoint for testing the polygon smoothing algorithm. Hitting this endpoint will parse the test message, smooth
+     * the polygon, and insert it into the database. The message will not expire for 12 hours, allowing for ample
+     * test the message via android and view the results in the website
+     * @return
+     */
+    @GetMapping("polygonSmoothingMessage")
+    public ResponseEntity<?> parsePolygonSmoothingMessage() {
+        CMACMessage polgyonSmoothingMessage2 = XMLParser.parsePolygonSmoothingMessage();
+        messageRepository.save(polgyonSmoothingMessage2);
+        CMACMessage polgyonSmoothingMessage = XMLParser.parsePolygonSmoothingMessage();
+
+        String polygon = polgyonSmoothingMessage.getAlertInfo().getAlertAreaList().get(0).getPolygon();
+        polygon = Util.smoothPolygon(polygon);
+        polgyonSmoothingMessage.getAlertInfo().getAlertAreaList().get(0).setPolygon(polygon);
+
+        CMACMessage result = messageRepository.save(polgyonSmoothingMessage);
+
+        return ResponseEntity.ok(result);
     }
 }
