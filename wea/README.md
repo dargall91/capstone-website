@@ -4,41 +4,50 @@ This document provides an overview on how to start the server and use the API.
 
 ## Database Setup
 
-The database will not automatically create and update itself just by running the application.
+The database will automatically create and update itself just by running the application.
+
+MySql will need to be installed on your device.
+
+Create a new MySql database with username and password set to 'root'.
 
 ## Starting the Server
 
-Java JDK 17 is required to run this project. This SpringBoot application can be run in your IDE as you would any other 
-application, or by executing gradle commands in the terminal.  There are now two different builds you can use for 
+Java JDK 17 is required to run this project. This SpringBoot application can be run in your IDE as you would any other
+application, or by executing gradle commands in the terminal. There are now two different builds you can use for
 the application. To run the dev build, use the command `./gradlew bootRun`. To run the prod build, use the command
 `./gradlew prod`.
 
+If the above commands do not work, just run 'gradle bootRun'.
+
+If you run into any further issues, run 'gradle clean build bootRun'.
+
 ## Making API Requests
 
-The host for WEA API endpoints is always `http://<your_ip>:8080/wea/api/` where `<your_ip>` is the local IP address 
-of the machine running this program, or `localhost` if you are hitting the api from the same machine as the one 
+The host for WEA API endpoints is always `http://<your_ip>:8080/wea/api/` where `<your_ip>` is the local IP address
+of the machine running this program, or `localhost` if you are hitting the api from the same machine as the one
 running the program. In this projects root directory, there is a json file named `API_Tests. har`. This is an `HAR - 
 HTTP Archive Format` file that can imported in either Insomnia or Postman to test the API endpoints.
 
-At this time, the WEA API *does not* support HTTPS.
+At this time, the WEA API _does not_ support HTTPS.
 
 ## Endpoint List
 
 The WEA API has the following endpoints:
 
-* [Get a Message](#message)
-* [Upload Device Data](#upload)
-* [Get an Upload](#getUpload)
-* [Get Message Stats by AO](#stats)
+- [Get a Message](#message)
+- [Upload Device Data](#upload)
+- [Get an Upload](#getUpload)
+- [Get Message Stats by AO](#stats)
 
 ### <a id="message" /> Get a Message
 
-The **Get a Message** endpoint is used by mobile devices to simulate receiving a CMAC message from an AO. On a 
+The **Get a Message** endpoint is used by mobile devices to simulate receiving a CMAC message from an AO. On a
 successful GET, the response message body will be a CMAC compliant XML object.
 
 #### Endpoint Usage
+
 | Endpoint    | HTTP Verb | Request Body | Parameters | Success Response | Response Data   |
-|-------------|-----------|--------------|------------|------------------|-----------------|
+| ----------- | --------- | ------------ | ---------- | ---------------- | --------------- |
 | /getMessage | GET       | ---          | ---        | 200              | application/xml |
 
 #### Example Request:
@@ -121,12 +130,13 @@ successful GET, the response message body will be a CMAC compliant XML object.
 
 ### <a id="upload" /> Upload Device Data
 
-The **Upload Device Data** endpoint is used by mobile devices to upload the collected data to the server. On a 
+The **Upload Device Data** endpoint is used by mobile devices to upload the collected data to the server. On a
 successful PUT, the HTTP response header will contain a Location that points to the uploaded data
 
 #### Endpoint Usage
+
 | Endpoint | HTTP Verb | Request Body | Parameters | Success Response | Response Data |
-|----------|-----------|--------------|------------|------------------|---------------|
+| -------- | --------- | ------------ | ---------- | ---------------- | ------------- |
 | /upload  | PUT       | XML          | ---        | 201              | Location      |
 
 #### Example Request:
@@ -148,19 +158,20 @@ successful PUT, the HTTP response header will contain a Location that points to 
 
 ### <a id="getUpload" />Get an Upload
 
-The **Get an Upload** endpoint is used to confirm that a device's data was successfully uploaded to the server. On a 
-successful get, the HTTP response body will be an XML object that contains the uploaded data and the upload's unique 
+The **Get an Upload** endpoint is used to confirm that a device's data was successfully uploaded to the server. On a
+successful get, the HTTP response body will be an XML object that contains the uploaded data and the upload's unique
 identifier.
 
 #### Endpoint Usage
-| Endpoint   | HTTP Verb | Request Body | Success Response  | Response Data   |
-|------------|-----------|--------------|-------------------|-----------------|
-| /getUpload | PUT       | XML          | 200               | application/xml |
+
+| Endpoint   | HTTP Verb | Request Body | Success Response | Response Data   |
+| ---------- | --------- | ------------ | ---------------- | --------------- |
+| /getUpload | PUT       | XML          | 200              | application/xml |
 
 #### Request Parameters
 
 | Name       | Definition                                     | Data Type | Required |
-|------------|------------------------------------------------|-----------|----------|
+| ---------- | ---------------------------------------------- | --------- | -------- |
 | identifier | the unique upload id that identifies this data | integer   | Yes      |
 
 #### Example Request:
@@ -183,32 +194,35 @@ identifier.
 
 ### <a id="stats" /> Get Message Stats by AO
 
-The **Get Message Stats by AO** endpoint is used to get the stats of a subset of all messages in the database from a 
-specified AO. Result subsets are divided into pages with up to 9 results per page. The page must be specified in the 
-request url. On a successful GET, the HTTP response body will contain a JSON array of JSON objects, one object for 
-each message by the AO, and each object will contain that message's unique CMAC_message_number, CMAC_sent_date_time, 
-and the stats collected from all the devices that received the message. An AO's registered sender name will contain 
+The **Get Message Stats by AO** endpoint is used to get the stats of a subset of all messages in the database from a
+specified AO. Result subsets are divided into pages with up to 9 results per page. The page must be specified in the
+request url. On a successful GET, the HTTP response body will contain a JSON array of JSON objects, one object for
+each message by the AO, and each object will contain that message's unique CMAC_message_number, CMAC_sent_date_time,
+and the stats collected from all the devices that received the message. An AO's registered sender name will contain
 the special character '@' which must be encoded as "%40" in order to successfully query the database.A definition of
 each JSON key in the response body is provided in after the example response body.
 
-This endpoint supports multiple ways to filter and sort responses. If no such parameters are provided, this endpoint 
-will by default sort messages from by newest to oldest with no filters. When updating the filters, it is important to 
+This endpoint supports multiple ways to filter and sort responses. If no such parameters are provided, this endpoint
+will by default sort messages from by newest to oldest with no filters. When updating the filters, it is important to
 request the results for page 1 as additional pages may be blank after filtering. All dates are inclusive.
 
 #### Endpoint Usage
+
 | Endpoint                          | HTTP Verb | Request Body | Success Response | Response Data    |
-|-----------------------------------|-----------|--------------|------------------|------------------|
+| --------------------------------- | --------- | ------------ | ---------------- | ---------------- |
 | /{sender}/messages/{page}/filters | GET       | ---          | 200              | application/json |
 
 #### URL Path Variables:
+
 | Name   | Definition                                                                          | Data Type | Required |
-|--------|-------------------------------------------------------------------------------------|-----------|----------|
+| ------ | ----------------------------------------------------------------------------------- | --------- | -------- |
 | sender | The AO of the messages that should be retrieved; this should be a CMAC_sender value | string    | Yes      |
 | page   | The page number of the results that should be retrieved                             | integer   | Yes      |
 
 #### Request Parameters:
+
 | Name          | Definition                                                                                                              | Data Type                   | Required |
-|---------------|-------------------------------------------------------------------------------------------------------------------------|-----------------------------|----------|
+| ------------- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------- | -------- |
 | messageType   | If this parameter is provided, only messages with a CMAC_message_type that contains the provided value will be returned | string                      | No       |
 | messageNumber | If this parameter is provided, only messages with a matching CMAC_message_number will be returned                       | string                      | No       |
 | fromDate      | If this parameter is provided, only messages with a CMAC_sent_date equal to or after this will be returned              | Date (yyyy-mm-dd)           | No       |
@@ -218,7 +232,7 @@ request the results for page 1 as additional pages may be blank after filtering.
 
 #### Example Request:
 
-This example gets all messages sent between 2022-10-10 and 2022-11-13 ordered by their message numbers in 
+This example gets all messages sent between 2022-10-10 and 2022-11-13 ordered by their message numbers in
 ascending order
 
     GET http://localhost:8080/wea/api/w-nws.webmaster%40noaa.gov/messages/1/filter?fromDate=2022-10-01&toDate=2022-11-13&sortBy=number&sortOrder=asc
@@ -227,127 +241,128 @@ ascending order
 
     {
         "messageStats": [
-		{
-			"messageNumber": "0000000C",
-			"capIdentifier": "urn:oid:2.49.0.1.840.0.6f50c3a937ba04fa681c49f24e7404819037f1cd.001.1",
-			"messageType": "Alert",
-			"sentDateTime": "2023-02-18 02:09:00.0",
-			"expiresDateTime": "2023-02-18 13:00:00.0",
-			"coordinates": [
-				{
-					"lat": "44.24",
-					"lon": "-107.79"
-				},
-				{
-					"lat": "44.25",
-					"lon": "-107.85"
-				},
-				{
-					"lat": "44.26",
-					"lon": "-107.87"
-				},
-				{
-					"lat": "44.25",
-					"lon": "-107.98"
-				},
-				{
-					"lat": "44.27",
-					"lon": "-108.0"
-				},
-				{
-					"lat": "44.32",
-					"lon": "-108.03"
-				},
-				{
-					"lat": "44.51",
-					"lon": "-108.07"
-				},
-				{
-					"lat": "44.52",
-					"lon": "-108.06"
-				},
-				{
-					"lat": "44.48",
-					"lon": "-108.05"
-				},
-				{
-					"lat": "44.47",
-					"lon": "-108.05"
-				},
-				{
-					"lat": "44.45",
-					"lon": "-108.03"
-				},
-				{
-					"lat": "44.43",
-					"lon": "-108.04"
-				},
-				{
-					"lat": "44.29",
-					"lon": "-107.99"
-				},
-				{
-					"lat": "44.27",
-					"lon": "-107.95"
-				},
-				{
-					"lat": "44.27",
-					"lon": "-107.89"
-				},
-				{
-					"lat": "44.27",
-					"lon": "-107.87"
-				},
-				{
-					"lat": "44.25",
-					"lon": "-107.78"
-				},
-				{
-					"lat": "44.17",
-					"lon": "-107.69"
-				},
-				{
-					"lat": "44.17",
-					"lon": "-107.71"
-				},
-				{
-					"lat": "44.24",
-					"lon": "-107.79"
-				}
-			],
-			"areaNames": [
-				"Gilliam County Oregon",
-				"Morrow County Oregon",
-				"Umatilla County Oregon",
-				"Wheeler County Oregon",
-				"Klickitat County Washington",
-				"Yakima County Washington"
-			],
-			"received": 4,
-			"expectedReceived": 5,
-			"averageTime": "00:01:00",
-			"shortestTime": "00:01:00",
-			"firstReceived": "2023-02-18 02:10:00.0",
-			"averagePresentationDelay": "00:00:09",
-			"firstPresented": "2023-02-18 02:10:09.0",
-			"receivedOutside": 1,
-			"averageDistance": "6.67",
-			"minDistance": "1",
-			"maxDistance": "10",
-			"medianDistance": "5.0",
-			"presented": 3,
+    	{
+    		"messageNumber": "0000000C",
+    		"capIdentifier": "urn:oid:2.49.0.1.840.0.6f50c3a937ba04fa681c49f24e7404819037f1cd.001.1",
+    		"messageType": "Alert",
+    		"sentDateTime": "2023-02-18 02:09:00.0",
+    		"expiresDateTime": "2023-02-18 13:00:00.0",
+    		"coordinates": [
+    			{
+    				"lat": "44.24",
+    				"lon": "-107.79"
+    			},
+    			{
+    				"lat": "44.25",
+    				"lon": "-107.85"
+    			},
+    			{
+    				"lat": "44.26",
+    				"lon": "-107.87"
+    			},
+    			{
+    				"lat": "44.25",
+    				"lon": "-107.98"
+    			},
+    			{
+    				"lat": "44.27",
+    				"lon": "-108.0"
+    			},
+    			{
+    				"lat": "44.32",
+    				"lon": "-108.03"
+    			},
+    			{
+    				"lat": "44.51",
+    				"lon": "-108.07"
+    			},
+    			{
+    				"lat": "44.52",
+    				"lon": "-108.06"
+    			},
+    			{
+    				"lat": "44.48",
+    				"lon": "-108.05"
+    			},
+    			{
+    				"lat": "44.47",
+    				"lon": "-108.05"
+    			},
+    			{
+    				"lat": "44.45",
+    				"lon": "-108.03"
+    			},
+    			{
+    				"lat": "44.43",
+    				"lon": "-108.04"
+    			},
+    			{
+    				"lat": "44.29",
+    				"lon": "-107.99"
+    			},
+    			{
+    				"lat": "44.27",
+    				"lon": "-107.95"
+    			},
+    			{
+    				"lat": "44.27",
+    				"lon": "-107.89"
+    			},
+    			{
+    				"lat": "44.27",
+    				"lon": "-107.87"
+    			},
+    			{
+    				"lat": "44.25",
+    				"lon": "-107.78"
+    			},
+    			{
+    				"lat": "44.17",
+    				"lon": "-107.69"
+    			},
+    			{
+    				"lat": "44.17",
+    				"lon": "-107.71"
+    			},
+    			{
+    				"lat": "44.24",
+    				"lon": "-107.79"
+    			}
+    		],
+    		"areaNames": [
+    			"Gilliam County Oregon",
+    			"Morrow County Oregon",
+    			"Umatilla County Oregon",
+    			"Wheeler County Oregon",
+    			"Klickitat County Washington",
+    			"Yakima County Washington"
+    		],
+    		"received": 4,
+    		"expectedReceived": 5,
+    		"averageTime": "00:01:00",
+    		"shortestTime": "00:01:00",
+    		"firstReceived": "2023-02-18 02:10:00.0",
+    		"averagePresentationDelay": "00:00:09",
+    		"firstPresented": "2023-02-18 02:10:09.0",
+    		"receivedOutside": 1,
+    		"averageDistance": "6.67",
+    		"minDistance": "1",
+    		"maxDistance": "10",
+    		"medianDistance": "5.0",
+    		"presented": 3,
             "notPresentedOutside": 0,
             "optedOut": 1,
             "presentedDefault": 2
-		},
+    	},
         "commonName": "National Weather Service",
         "prev": false,
         "next": false
     }
 
 #### Json Response Key Definitions
+
 | JSON Key                 | Definition                                                                                                                                                               |
-|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | messageStats             | an array of JSON objects that contain the collected stats for a cmac message                                                                                             |
 | messageNumber            | The CMAC_message_number of the message                                                                                                                                   |
 | capIdentifier            | The CMAC_cap_identifier of the message                                                                                                                                   |
