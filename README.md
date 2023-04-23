@@ -36,6 +36,8 @@ See the section about [deployment](https://vitejs.dev/guide/build.html#building-
 
 ## General Instructions
 
+Before running the website, be sure to have the server and android application launched, and get a message from the android application to populate the database. Otherwise you will end up with no viewable data.
+
 To view the running project, start the server in the /wea folder, and in this folder, run npm start.
 
 When prompted to login, paste the user w-nws.webmaster@noaa.gov to gain access to the alerts being tracked from the National Weather Service.
